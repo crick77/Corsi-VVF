@@ -6,6 +6,7 @@
 package it.dipvvf.abr.app.corsivvf.rest;
 
 import it.dipvvf.abr.app.corsivvf.bean.AccessInfo;
+import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -21,10 +22,11 @@ import javax.ws.rs.core.Response;
  *
  * @author riccardo.iovenitti
  */
-@Path("/auth")
 @Stateless
 @LocalBean
-public class AuthService {
+@Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+public class AuthService extends BaseService {
     @EJB
     MiscServices msb;
 
@@ -35,8 +37,7 @@ public class AuthService {
      */
     @POST
     @Path("/login")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)    
     public Response hello(AccessInfo ai) {
         if("admin".equalsIgnoreCase(ai.getUsername()) && "pass".equalsIgnoreCase(ai.getPassword())) {
             return Response.ok(msb.createToken("admin_id", msb.toMillis(0, 6, 0))).build();

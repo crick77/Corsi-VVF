@@ -5,6 +5,7 @@
  */
 package it.dipvvf.abr.app.corsivvf.rest;
 
+import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.model.Delta;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -26,7 +27,7 @@ import javax.ws.rs.core.Response;
 @LocalBean
 @Path("delta")
 @Produces(MediaType.APPLICATION_JSON)
-public class DeltaService {
+public class DeltaService extends BaseService {
     @PersistenceContext
     EntityManager em;
     
