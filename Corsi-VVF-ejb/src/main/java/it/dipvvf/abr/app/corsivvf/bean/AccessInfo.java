@@ -20,6 +20,11 @@ public class AccessInfo implements Serializable {
     public AccessInfo() {
     }
 
+    public AccessInfo(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public String getUsername() {
         return username;
     }
