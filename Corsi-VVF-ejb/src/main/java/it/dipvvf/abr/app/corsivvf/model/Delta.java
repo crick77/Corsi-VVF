@@ -72,7 +72,12 @@ public class Delta implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 16)
-    private String operazione;
+    private String operazione;     
+    @Size(max = 255)
+    private String risorsaPadre;
+    @Basic(optional = false)
+    @NotNull
+    private int dimensione;
     @JoinColumn(name = "id_dispositivo", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Dispositivo idDispositivo;
@@ -84,7 +89,7 @@ public class Delta implements Serializable {
         this.id = id;
     }
 
-    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione) {
+    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, String risorsaPadre, int dimensione) {
         this.id = id;
         this.dataSincronizzazione = dataSincronizzazione;
         this.tipologia = tipologia;
@@ -92,6 +97,8 @@ public class Delta implements Serializable {
         this.ordine = ordine;
         this.stato = stato;
         this.operazione = operazione;
+        this.risorsaPadre = risorsaPadre;
+        this.dimensione = dimensione;
     }
 
     public Integer getId() {
@@ -158,6 +165,22 @@ public class Delta implements Serializable {
         this.operazione = operazione;
     }
 
+    public String getRisorsaPadre() {
+        return risorsaPadre;
+    }
+
+    public void setRisorsaPadre(String risorsaPadre) {
+        this.risorsaPadre = risorsaPadre;
+    }
+
+    public int getDimensione() {
+        return dimensione;
+    }
+
+    public void setDimensione(int dimensione) {
+        this.dimensione = dimensione;
+    }
+        
     @JsonbTransient
     public Dispositivo getIdDispositivo() {
         return idDispositivo;
