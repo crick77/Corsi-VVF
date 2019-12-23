@@ -13,6 +13,7 @@ import it.dipvvf.abr.app.corsivvf.model.Corso;
 import it.dipvvf.abr.app.corsivvf.model.Delta;
 import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Dispositivo;
+import it.dipvvf.abr.app.corsivvf.model.Documento;
 import it.dipvvf.abr.app.corsivvf.model.Installazione;
 import java.net.URI;
 import java.util.Date;
@@ -131,14 +132,14 @@ public class DispositiviService extends BaseService {
         }
 
         try {
+            Date dataSinc = new Date();
+            Counter order = new Counter();
+            
             Installazione inst = new Installazione();
             inst.setIdCorso(corso);
             inst.setIdDispositivo(disp);
-            inst.setDataInstallazione(new Date());
+            inst.setDataInstallazione(dataSinc);
             em.persist(inst);
-
-            Date dataSinc = new Date();
-            Counter order = new Counter();
 
             Delta d = new Delta();
             
@@ -150,6 +151,7 @@ public class DispositiviService extends BaseService {
             d.setOrdine(order.next());
             d.setStato(DeltaConst.Status.PENDING);
             d.setDimensione(-1);
+            d.setUidRisorsa(corso.getUidRisorsa());
             em.persist(d);
 
             List<Categoria> categorie = em.createQuery("SELECT c FROM Categoria c WHERE c.idCorso = :corso", Categoria.class)
@@ -167,14 +169,57 @@ public class DispositiviService extends BaseService {
                 d.setOrdine(order.next());
                 d.setStato(DeltaConst.Status.PENDING);
                 d.setDimensione(-1);
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE);
+                d.setUidRisorsaPadre(categoria.getIdCorso().getUidRisorsa());
+                d.setUidRisorsa(categoria.getUidRisorsa());
                 em.persist(d);
             }
 
-            // Get all document from course and each category and insert delta
+            List<Documento> documenti = em.createQuery("SELECT d FROM Documento d WHERE d.idCorso = :corso", Documento.class)
+                                        .setParameter("corso", corso)
+                                        .getResultList();
+            for(Documento documento : documenti) {
+                d = new Delta();
+                
+                d.setRisorsa(documento.getNomefile());
+                d.setDataSincronizzazione(dataSinc);
+                d.setIdDispositivo(disp);
+                d.setOperazione(DeltaConst.Operation.ADD);
+                d.setTipologia(DeltaConst.ResourceType.DOCUMENT);
+                d.setOrdine(order.next());
+                d.setStato(DeltaConst.Status.PENDING);
+                d.setDimensione(documento.getDimensione());
+                d.setMd5(documento.getChecksum());
+                d.setUidRisorsaPadre(documento.getIdCorso().getUidRisorsa());
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE);
+                d.setUidRisorsa(documento.getUidRisorsa());
+                em.persist(d);
+            }
+            
+            documenti = em.createQuery("SELECT d FROM Documento d JOIN d.idCategoria c WHERE c.idCorso = :corso", Documento.class)
+                                        .setParameter("corso", corso)
+                                        .getResultList();
+            for(Documento documento : documenti) {
+                d = new Delta();
+                
+                d.setRisorsa(documento.getNomefile());
+                d.setDataSincronizzazione(dataSinc);
+                d.setIdDispositivo(disp);
+                d.setOperazione(DeltaConst.Operation.ADD);
+                d.setTipologia(DeltaConst.ResourceType.DOCUMENT);
+                d.setOrdine(order.next());
+                d.setStato(DeltaConst.Status.PENDING);
+                d.setDimensione(documento.getDimensione());
+                d.setMd5(documento.getChecksum());
+                d.setUidRisorsaPadre(documento.getIdCategoria().getUidRisorsa());
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.CATEGORY);
+                d.setUidRisorsa(documento.getUidRisorsa());
+                em.persist(d);
+            }
             
             em.flush();
 
-            return Response.created(URI.create(resourceToURI(info, inst.getId()))).build();
+            return Response.status(Response.Status.CREATED).entity(resourceToURI(info, inst.getId())).build();
         } catch (Exception e) {
             ctx.setRollbackOnly();
             return Response.status(Response.Status.CONFLICT).entity(e).build();

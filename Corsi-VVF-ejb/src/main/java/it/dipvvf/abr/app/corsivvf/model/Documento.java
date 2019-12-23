@@ -8,6 +8,7 @@ package it.dipvvf.abr.app.corsivvf.model;
 import java.io.Serializable;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -55,6 +56,11 @@ public class Documento implements Serializable {
     @NotNull
     @Lob
     private byte[] contenuto;
+    @Basic(optional = false)
+    @Column(name = "uid_risorsa")
+    @NotNull
+    @Size(min = 1, max = 36)
+    private String uidRisorsa;
     @JoinColumn(name = "id_categoria", referencedColumnName = "id")
     @ManyToOne
     private Categoria idCategoria;
@@ -118,6 +124,14 @@ public class Documento implements Serializable {
         this.contenuto = contenuto;
     }
 
+    public String getUidRisorsa() {
+        return uidRisorsa;
+    }
+
+    public void setUidRisorsa(String uidRisorsa) {
+        this.uidRisorsa = uidRisorsa;
+    }
+        
     @JsonbTransient
     public Categoria getIdCategoria() {
         return idCategoria;

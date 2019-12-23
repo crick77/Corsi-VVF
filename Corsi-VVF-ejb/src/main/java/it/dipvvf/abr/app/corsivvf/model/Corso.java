@@ -72,6 +72,11 @@ public class Corso implements Serializable {
     @Basic(optional = false)
     @NotNull
     private boolean abilitato;
+    @Basic(optional = false)
+    @Column(name = "uid_risorsa")
+    @NotNull
+    @Size(min = 1, max = 36)
+    private String uidRisorsa;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idCorso")
     private Collection<Installazione> installazioneCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idCorso")
@@ -158,6 +163,14 @@ public class Corso implements Serializable {
         this.abilitato = abilitato;
     }
 
+    public String getUidRisorsa() {
+        return uidRisorsa;
+    }
+
+    public void setUidRisorsa(String uidRisorsa) {
+        this.uidRisorsa = uidRisorsa;
+    }
+        
     @XmlTransient
     @JsonbTransient
     public Collection<Installazione> getInstallazioneCollection() {

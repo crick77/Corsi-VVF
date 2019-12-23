@@ -9,9 +9,13 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
+import java.rmi.server.UID;
 import java.util.Date;
+import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -39,6 +43,11 @@ public class MiscServices {
         return (days*3600)+(hours*60)+minutes;
     }
    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public String generateUID() {
+        return UUID.randomUUID().toString().toUpperCase();
+    }
+    
     /** 
      * to be removed - servlet upload
      * 

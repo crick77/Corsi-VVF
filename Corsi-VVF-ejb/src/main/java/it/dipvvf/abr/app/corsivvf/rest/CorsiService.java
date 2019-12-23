@@ -7,6 +7,7 @@ package it.dipvvf.abr.app.corsivvf.rest;
 
 import it.dipvvf.abr.app.corsivvf.bean.Checksum;
 import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
+import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.model.Categoria;
 import it.dipvvf.abr.app.corsivvf.model.Corso;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
@@ -18,6 +19,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -47,11 +49,13 @@ import javax.ws.rs.core.UriInfo;
 @Path("courses")
 @Produces(MediaType.APPLICATION_JSON)
 public class CorsiService extends BaseService {
-
     @PersistenceContext
     EntityManager em;
     @Resource
     EJBContext ctx;
+    @Inject
+    MiscServices ms;
+    
 
     @GET
     public Response getCorsi(@Context UriInfo info) {
@@ -168,6 +172,7 @@ public class CorsiService extends BaseService {
         try {
             corso.setAbilitato(false);
             corso.setId(null);
+            corso.setUidRisorsa(ms.generateUID());
             em.persist(corso);
             em.flush();
         } catch (Exception e) {
@@ -284,6 +289,7 @@ public class CorsiService extends BaseService {
 
         try {
             cat.setIdCorso(c);
+            cat.setUidRisorsa(ms.generateUID());
             em.persist(cat);
             em.flush();
         } catch (Exception e) {
@@ -332,9 +338,10 @@ public class CorsiService extends BaseService {
             Documento doc = new Documento();
             doc.setIdCorso(corso);
             doc.setNomefile(Paths.get(documentData.getSubmittedFileName()).getFileName().toString());
-            doc.setDimensione(documentData.getSize());
+            doc.setDimensione(bytes.length);
             doc.setChecksum(cs.getCheckum());
             doc.setContenuto(bytes);
+            doc.setUidRisorsa(ms.generateUID());
             
             em.persist(doc);
             em.flush();
@@ -390,9 +397,10 @@ public class CorsiService extends BaseService {
             Documento doc = new Documento();
             doc.setIdCategoria(cat);
             doc.setNomefile(Paths.get(documentData.getSubmittedFileName()).getFileName().toString());
-            doc.setDimensione(documentData.getSize());
+            doc.setDimensione(bytes.length);
             doc.setChecksum(cs.getCheckum());
             doc.setContenuto(bytes);
+            doc.setUidRisorsa(ms.generateUID());
             
             em.persist(doc);
             em.flush();

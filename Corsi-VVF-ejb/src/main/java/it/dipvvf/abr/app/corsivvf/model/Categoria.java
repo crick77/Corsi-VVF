@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -47,6 +48,11 @@ public class Categoria implements Serializable {
     private String nome;
     @Size(max = 250)
     private String descrizione;
+    @Column(name = "uid_risorsa")
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 36)
+    private String uidRisorsa;
     @JoinColumn(name = "id_corso", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Corso idCorso;
@@ -89,6 +95,14 @@ public class Categoria implements Serializable {
         this.descrizione = descrizione;
     }
 
+    public String getUidRisorsa() {
+        return uidRisorsa;
+    }
+
+    public void setUidRisorsa(String uidRisorsa) {
+        this.uidRisorsa = uidRisorsa;
+    }
+    
     @JsonbTransient
     public Corso getIdCorso() {
         return idCorso;

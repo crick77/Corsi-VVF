@@ -60,7 +60,7 @@ public class Delta implements Serializable {
     @NotNull
     @Size(min = 1, max = 255)
     private String risorsa;
-    @Size(max = 32)
+    @Size(max = 64)
     private String md5;
     @Basic(optional = false)
     @NotNull
@@ -73,13 +73,20 @@ public class Delta implements Serializable {
     @NotNull
     @Size(min = 1, max = 16)
     private String operazione;     
-    @Size(max = 255)
-    private String risorsaPadre;
+    @Size(max = 36)
+    @Column(name = "uid_risorsa_padre")
+    private String uidRisorsaPadre;
     @Basic(optional = false)
     @NotNull
-    private int dimensione;
+    private long dimensione;
+    @Column(name = "tipo_risorsa_padre")
+    @Size(max = 255)
+    private String tipoRisorsaPadre;
+    @Size(max = 36)
+    @Column(name = "uid_risorsa")
+    private String uidRisorsa;
     @JoinColumn(name = "id_dispositivo", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false)    
     private Dispositivo idDispositivo;
 
     public Delta() {
@@ -89,7 +96,7 @@ public class Delta implements Serializable {
         this.id = id;
     }
 
-    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, String risorsaPadre, int dimensione) {
+    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, String risorsaPadre, int dimensione, String tipoRisorsaPadre) {
         this.id = id;
         this.dataSincronizzazione = dataSincronizzazione;
         this.tipologia = tipologia;
@@ -97,8 +104,9 @@ public class Delta implements Serializable {
         this.ordine = ordine;
         this.stato = stato;
         this.operazione = operazione;
-        this.risorsaPadre = risorsaPadre;
+        this.uidRisorsaPadre = risorsaPadre;
         this.dimensione = dimensione;
+        this.tipoRisorsaPadre = tipoRisorsaPadre;
     }
 
     public Integer getId() {
@@ -165,20 +173,36 @@ public class Delta implements Serializable {
         this.operazione = operazione;
     }
 
-    public String getRisorsaPadre() {
-        return risorsaPadre;
+    public String getUidRisorsaPadre() {
+        return uidRisorsaPadre;
     }
 
-    public void setRisorsaPadre(String risorsaPadre) {
-        this.risorsaPadre = risorsaPadre;
+    public void setUidRisorsaPadre(String uidRisorsaPadre) {
+        this.uidRisorsaPadre = uidRisorsaPadre;
     }
 
-    public int getDimensione() {
+    public long getDimensione() {
         return dimensione;
     }
 
-    public void setDimensione(int dimensione) {
+    public void setDimensione(long dimensione) {
         this.dimensione = dimensione;
+    }
+     
+    public String getTipoRisorsaPadre() {
+        return tipoRisorsaPadre;
+    }
+
+    public void setTipoRisorsaPadre(String tipoRisorsaPadre) {
+        this.tipoRisorsaPadre = tipoRisorsaPadre;
+    }
+
+    public String getUidRisorsa() {
+        return uidRisorsa;
+    }
+
+    public void setUidRisorsa(String uidRisorsa) {
+        this.uidRisorsa = uidRisorsa;
     }
         
     @JsonbTransient

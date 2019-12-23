@@ -19,7 +19,7 @@ public final class DeltaConst {
 
     public final class ResourceType {
         public final static String COURSE = "COURSE";
-        public final static String CATEGORY = "COURSE";
+        public final static String CATEGORY = "CATEGORY";
         public final static String DOCUMENT = "DOCUMENT";
         
         private ResourceType() {}
