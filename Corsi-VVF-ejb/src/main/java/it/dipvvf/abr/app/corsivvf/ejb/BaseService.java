@@ -17,6 +17,12 @@ import javax.ws.rs.core.UriInfo;
  * @author riccardo.iovenitti
  */
 public abstract class BaseService {
+    /**
+     * 
+     * @param uriInfo
+     * @param resources
+     * @return 
+     */
     public List<String> resourcesToURI(UriInfo uriInfo, List<? extends Object> resources) {
         List<String> uris = new ArrayList<>(resources!=null ? resources.size() : 1);
         
@@ -33,6 +39,12 @@ public abstract class BaseService {
         return uris;
     }
     
+    /**
+     * 
+     * @param uriInfo
+     * @param resources
+     * @return 
+     */
     public List<String> resourcesToURI(UriInfo uriInfo, Collection<? extends Object> resources) {       
         List<? extends Object> l;   
         if(resources!=null) {
@@ -45,12 +57,24 @@ public abstract class BaseService {
         return resourcesToURI(uriInfo, l);
     }
     
+    /**
+     * 
+     * @param uriInfo
+     * @param resource
+     * @return 
+     */
     public String resourceToURI(UriInfo uriInfo, Object resource) {                       
         ArrayList<Object> resources = new ArrayList<>();
         resources.add(resource);
         return resourcesToURI(uriInfo, resources).get(0);
     }
     
+    /**
+     * 
+     * @param fileName
+     * @param data
+     * @return 
+     */
     public Response downloadFile(String fileName, byte[] data) {
         return Response.ok(data).header("Content-Disposition", "attachment; filename=\""+fileName+"\"").build();
     }

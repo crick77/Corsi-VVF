@@ -12,14 +12,33 @@ package it.dipvvf.abr.app.corsivvf.bean;
 public final class Counter {
     private int count;
     
+    /**
+     * 
+     */
     public Counter() {        
         count = 0;
     }
     
+    /**
+     * 
+     * @param startFrom 
+     */
+    public Counter(int startFrom) {
+        count = startFrom;
+    }
+    
+    /**
+     * 
+     * @return 
+     */
     public synchronized int next() {        
         return count++;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public synchronized int current() {
         return count;
     }

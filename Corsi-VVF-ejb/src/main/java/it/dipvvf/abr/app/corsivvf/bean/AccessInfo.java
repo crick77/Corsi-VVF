@@ -17,26 +17,50 @@ public class AccessInfo implements Serializable {
     private String username;
     private String password;
 
+    /**
+     * 
+     */
     public AccessInfo() {
     }
 
+    /**
+     * 
+     * @param username
+     * @param password 
+     */
     public AccessInfo(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
+    /**
+     * 
+     * @return 
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * 
+     * @param username 
+     */
     public void setUsername(String username) {
         this.username = username;
     }
-
+    
+    /**
+     * 
+     * @return 
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * 
+     * @param password 
+     */
     public void setPassword(String password) {
         this.password = password;
     }

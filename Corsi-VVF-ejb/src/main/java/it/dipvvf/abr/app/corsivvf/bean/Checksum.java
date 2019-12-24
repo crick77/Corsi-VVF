@@ -18,6 +18,9 @@ public class Checksum {
     private MessageDigest md = null;
     private CRC32 crc = null;
     
+    /**
+     * 
+     */
     public Checksum() {
         try {
             md = MessageDigest.getInstance("MD5");
@@ -27,6 +30,10 @@ public class Checksum {
         }
     }
     
+    /**
+     * 
+     * @param data 
+     */
     public void update(byte[] data) {
         if(md!=null) 
             md.update(data);
@@ -34,6 +41,12 @@ public class Checksum {
             crc.update(data);
     }
     
+    /**
+     * 
+     * @param data
+     * @param offs
+     * @param len 
+     */
     public void update(byte[] data, int offs, int len) {
         if(md!=null) 
             md.update(data, offs, len);
@@ -41,6 +54,10 @@ public class Checksum {
             crc.update(data, offs, len);
     }
     
+    /**
+     * 
+     * @return 
+     */
     public String getCheckum() {
         StringBuilder sb = new StringBuilder();
         if(md!=null) {

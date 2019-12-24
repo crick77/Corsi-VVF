@@ -15,7 +15,6 @@ import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Dispositivo;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
 import it.dipvvf.abr.app.corsivvf.model.Installazione;
-import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -47,7 +46,6 @@ import javax.ws.rs.core.UriInfo;
 @Path("devices")
 @Produces(MediaType.APPLICATION_JSON)
 public class DispositiviService extends BaseService {
-
     @Inject
     MiscServices ms;
     @PersistenceContext
@@ -55,23 +53,38 @@ public class DispositiviService extends BaseService {
     @Resource
     EJBContext ctx;
 
+    /**
+     * 
+     * @return 
+     */
     @GET
     public Response getDevices() {
         List<Dispositivo> lDisp = em.createQuery("SELECT d.id FROM Dispositivo d").getResultList();
         return lDisp.isEmpty() ? Response.noContent().build() : Response.ok(lDisp).build();
     }
 
+    /**
+     * 
+     * @param id
+     * @return 
+     */
     @GET
-    @Path("{id}")
-    public Response getDettaglioDevice(@PathParam("id") Integer id) {
+    @Path("{id: \\d+}")
+    public Response getDeviceDetail(@PathParam("id") int id) {
         Dispositivo disp = em.find(Dispositivo.class, id);
         return (disp == null) ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(disp).build();
     }
 
+    /**
+     * 
+     * @param id
+     * @param d
+     * @return 
+     */
     @PUT
-    @Path("{id}")
+    @Path("{id: \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDeviceInfo(@PathParam("id") Integer id, Dispositivo d) {
+    public Response updateDevice(@PathParam("id") int id, Dispositivo d) {
         try {
             em.persist(d);
             em.flush();
@@ -82,9 +95,14 @@ public class DispositiviService extends BaseService {
         }
     }
 
+    /**
+     * 
+     * @param id
+     * @return 
+     */
     @GET
-    @Path("{id}/courses")
-    public Response getDeviceCorsi(@PathParam("id") Integer id) {
+    @Path("{id: \\d+}/courses")
+    public Response getDeviceCourses(@PathParam("id") int id) {
         Dispositivo disp = em.find(Dispositivo.class, id);
         if (disp == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -97,9 +115,15 @@ public class DispositiviService extends BaseService {
         return (lInst.isEmpty()) ? Response.noContent().build() : Response.ok(lInst).build();
     }
 
+    /**
+     * 
+     * @param id
+     * @param idCorso
+     * @return 
+     */
     @GET
-    @Path("{id}/courses/{idcorso}")
-    public Response getDettaglioDeviceCorsi(@PathParam("id") Integer id, @PathParam("idcorso") Integer idCorso) {
+    @Path("{id: \\d+}/courses/{idcourse: \\d+}")
+    public Response getDettaglioDeviceCorsi(@PathParam("id") int id, @PathParam("idcourse") int idCorso) {
         Dispositivo disp = em.find(Dispositivo.class, id);
         if (disp == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -118,9 +142,16 @@ public class DispositiviService extends BaseService {
         return (lInst.isEmpty()) ? Response.noContent().build() : Response.ok(lInst.get(0)).build();
     }
 
+    /**
+     * 
+     * @param idDev
+     * @param idCorso
+     * @param info
+     * @return 
+     */
     @POST
-    @Path("{id}/courses/{idcorso}")
-    public Response abbinaDeviceCorso(@PathParam("id") Integer idDev, @PathParam("idcorso") Integer idCorso, @Context UriInfo info) {
+    @Path("{id: \\d+}/courses/{idcourse: \\d+}")
+    public Response installDeviceCourse(@PathParam("id") int idDev, @PathParam("idcourse") int idCorso, @Context UriInfo info) {
         Dispositivo disp = em.find(Dispositivo.class, idDev);
         if (disp == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -146,10 +177,10 @@ public class DispositiviService extends BaseService {
             d.setRisorsa(corso.getTitolo());
             d.setDataSincronizzazione(dataSinc);
             d.setIdDispositivo(disp);
-            d.setOperazione(DeltaConst.Operation.ADD);
-            d.setTipologia(DeltaConst.ResourceType.COURSE);
+            d.setOperazione(DeltaConst.Operation.ADD.toString());
+            d.setTipologia(DeltaConst.ResourceType.COURSE.toString());
             d.setOrdine(order.next());
-            d.setStato(DeltaConst.Status.PENDING);
+            d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(-1);
             d.setUidRisorsa(corso.getUidRisorsa());
             em.persist(d);
@@ -164,12 +195,12 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(categoria.getNome());
                 d.setDataSincronizzazione(dataSinc);
                 d.setIdDispositivo(disp);
-                d.setOperazione(DeltaConst.Operation.ADD);
-                d.setTipologia(DeltaConst.ResourceType.CATEGORY);
+                d.setOperazione(DeltaConst.Operation.ADD.toString());
+                d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
                 d.setOrdine(order.next());
-                d.setStato(DeltaConst.Status.PENDING);
+                d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(-1);
-                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE);
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE.toString());
                 d.setUidRisorsaPadre(categoria.getIdCorso().getUidRisorsa());
                 d.setUidRisorsa(categoria.getUidRisorsa());
                 em.persist(d);
@@ -184,14 +215,14 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(documento.getNomefile());
                 d.setDataSincronizzazione(dataSinc);
                 d.setIdDispositivo(disp);
-                d.setOperazione(DeltaConst.Operation.ADD);
-                d.setTipologia(DeltaConst.ResourceType.DOCUMENT);
+                d.setOperazione(DeltaConst.Operation.ADD.toString());
+                d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());
-                d.setStato(DeltaConst.Status.PENDING);
+                d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(documento.getDimensione());
                 d.setMd5(documento.getChecksum());
                 d.setUidRisorsaPadre(documento.getIdCorso().getUidRisorsa());
-                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE);
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE.toString());
                 d.setUidRisorsa(documento.getUidRisorsa());
                 em.persist(d);
             }
@@ -205,14 +236,14 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(documento.getNomefile());
                 d.setDataSincronizzazione(dataSinc);
                 d.setIdDispositivo(disp);
-                d.setOperazione(DeltaConst.Operation.ADD);
-                d.setTipologia(DeltaConst.ResourceType.DOCUMENT);
+                d.setOperazione(DeltaConst.Operation.ADD.toString());
+                d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());
-                d.setStato(DeltaConst.Status.PENDING);
+                d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(documento.getDimensione());
                 d.setMd5(documento.getChecksum());
                 d.setUidRisorsaPadre(documento.getIdCategoria().getUidRisorsa());
-                d.setTipoRisorsaPadre(DeltaConst.ResourceType.CATEGORY);
+                d.setTipoRisorsaPadre(DeltaConst.ResourceType.CATEGORY.toString());
                 d.setUidRisorsa(documento.getUidRisorsa());
                 em.persist(d);
             }
@@ -226,6 +257,11 @@ public class DispositiviService extends BaseService {
         }
     }
 
+    /**
+     * 
+     * @param deviceId
+     * @return 
+     */
     @POST
     public Response registerDevice(@HeaderParam("device-id") String deviceId) {
         if (deviceId == null) {

@@ -10,28 +10,92 @@ package it.dipvvf.abr.app.corsivvf.model;
  * @author riccardo.iovenitti
  */
 public final class DeltaConst {
-    public final class Operation {
-        public final static String ADD = "ADD";
-        public final static String REMOVE = "REMOVE";
+    /**
+     * 
+     */
+    public enum Operation {
+        ADD("ADD"),
+        UPDATE("UPDATE"),
+        REMOVE("REMOVE");
         
-        private Operation() {}
-    }
+        private final String operation;
+        
+        /**
+         * 
+         * @param operation 
+         */
+        private Operation(String operation) {
+            this.operation = operation;
+        }
+        
+        /**
+         * 
+         * @return 
+         */
+        @Override
+        public String toString() {
+            return operation;
+        }
+    };
 
-    public final class ResourceType {
-        public final static String COURSE = "COURSE";
-        public final static String CATEGORY = "CATEGORY";
-        public final static String DOCUMENT = "DOCUMENT";
+    /**
+     * 
+     */
+    public enum ResourceType {
+        COURSE("COURSE"),
+        CATEGORY("CATEGORY"),
+        DOCUMENT("DOCUMENT");
+                
+        private final String resourceType;
         
-        private ResourceType() {}
-    }
+        /**
+         * 
+         * @param res 
+         */
+        private ResourceType(String res) {
+            this.resourceType = res;
+        }
         
-    public final class Status {
-        public final static String PENDING = "PENDING";
-        public final static String ERROR = "ERROR";
-        public final static String DONE = "DONE";
+        /**
+         * 
+         * @return 
+         */
+        @Override
+        public String toString() {
+            return resourceType;
+        }
+    };
         
-        private Status() {}
+    /**
+     * 
+     */
+    public enum Status {
+        PENDING("PENDING"),
+        ERROR("ERROR"),
+        DONE("DONE");
+        
+        private final String status;
+        
+        /**
+         * 
+         * @param status 
+         */
+        private Status(String status) {
+            this.status = status;
+        }
+        
+        /**
+         * 
+         * @return 
+         */
+        @Override
+        public String toString() {
+            return status;
+        }
     }
     
+    /**
+     * 
+     */
     private DeltaConst() {}
 }
