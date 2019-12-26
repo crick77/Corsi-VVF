@@ -7,7 +7,6 @@ package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author riccardo.iovenitti
+ * @author ospite
  */
 @Entity
 @XmlRootElement
@@ -39,7 +38,11 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Delta.findByMd5", query = "SELECT d FROM Delta d WHERE d.md5 = :md5")
     , @NamedQuery(name = "Delta.findByOrdine", query = "SELECT d FROM Delta d WHERE d.ordine = :ordine")
     , @NamedQuery(name = "Delta.findByStato", query = "SELECT d FROM Delta d WHERE d.stato = :stato")
-    , @NamedQuery(name = "Delta.findByOperazione", query = "SELECT d FROM Delta d WHERE d.operazione = :operazione")})
+    , @NamedQuery(name = "Delta.findByOperazione", query = "SELECT d FROM Delta d WHERE d.operazione = :operazione")
+    , @NamedQuery(name = "Delta.findByUidRisorsaPadre", query = "SELECT d FROM Delta d WHERE d.uidRisorsaPadre = :uidRisorsaPadre")
+    , @NamedQuery(name = "Delta.findByDimensione", query = "SELECT d FROM Delta d WHERE d.dimensione = :dimensione")
+    , @NamedQuery(name = "Delta.findByTipoRisorsaPadre", query = "SELECT d FROM Delta d WHERE d.tipoRisorsaPadre = :tipoRisorsaPadre")
+    , @NamedQuery(name = "Delta.findByUidRisorsa", query = "SELECT d FROM Delta d WHERE d.uidRisorsa = :uidRisorsa")})
 public class Delta implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -72,22 +75,22 @@ public class Delta implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 16)
-    private String operazione;     
+    private String operazione;
     @Size(max = 36)
     @Column(name = "uid_risorsa_padre")
     private String uidRisorsaPadre;
     @Basic(optional = false)
     @NotNull
     private long dimensione;
-    @Column(name = "tipo_risorsa_padre")
     @Size(max = 255)
+    @Column(name = "tipo_risorsa_padre")
     private String tipoRisorsaPadre;
     @Size(max = 36)
     @Column(name = "uid_risorsa")
     private String uidRisorsa;
-    @JoinColumn(name = "id_dispositivo", referencedColumnName = "id")
-    @ManyToOne(optional = false)    
-    private Dispositivo idDispositivo;
+    @JoinColumn(name = "id_sincronizzazione", referencedColumnName = "id")
+    @ManyToOne
+    private Sincronizzazione idSincronizzazione;
 
     public Delta() {
     }
@@ -96,7 +99,7 @@ public class Delta implements Serializable {
         this.id = id;
     }
 
-    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, String risorsaPadre, int dimensione, String tipoRisorsaPadre) {
+    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, long dimensione) {
         this.id = id;
         this.dataSincronizzazione = dataSincronizzazione;
         this.tipologia = tipologia;
@@ -104,9 +107,7 @@ public class Delta implements Serializable {
         this.ordine = ordine;
         this.stato = stato;
         this.operazione = operazione;
-        this.uidRisorsaPadre = risorsaPadre;
         this.dimensione = dimensione;
-        this.tipoRisorsaPadre = tipoRisorsaPadre;
     }
 
     public Integer getId() {
@@ -188,7 +189,7 @@ public class Delta implements Serializable {
     public void setDimensione(long dimensione) {
         this.dimensione = dimensione;
     }
-     
+
     public String getTipoRisorsaPadre() {
         return tipoRisorsaPadre;
     }
@@ -204,14 +205,13 @@ public class Delta implements Serializable {
     public void setUidRisorsa(String uidRisorsa) {
         this.uidRisorsa = uidRisorsa;
     }
-        
-    @JsonbTransient
-    public Dispositivo getIdDispositivo() {
-        return idDispositivo;
+
+    public Sincronizzazione getIdSincronizzazione() {
+        return idSincronizzazione;
     }
 
-    public void setIdDispositivo(Dispositivo idDispositivo) {
-        this.idDispositivo = idDispositivo;
+    public void setIdSincronizzazione(Sincronizzazione idSincronizzazione) {
+        this.idSincronizzazione = idSincronizzazione;
     }
 
     @Override

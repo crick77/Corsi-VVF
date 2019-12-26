@@ -6,7 +6,6 @@
 package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author riccardo.iovenitti
+ * @author ospite
  */
 @Entity
 @XmlRootElement
@@ -33,7 +32,8 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Documento.findById", query = "SELECT d FROM Documento d WHERE d.id = :id")
     , @NamedQuery(name = "Documento.findByNomefile", query = "SELECT d FROM Documento d WHERE d.nomefile = :nomefile")
     , @NamedQuery(name = "Documento.findByDimensione", query = "SELECT d FROM Documento d WHERE d.dimensione = :dimensione")
-    , @NamedQuery(name = "Documento.findByChecksum", query = "SELECT d FROM Documento d WHERE d.checksum = :checksum")})
+    , @NamedQuery(name = "Documento.findByChecksum", query = "SELECT d FROM Documento d WHERE d.checksum = :checksum")
+    , @NamedQuery(name = "Documento.findByUidRisorsa", query = "SELECT d FROM Documento d WHERE d.uidRisorsa = :uidRisorsa")})
 public class Documento implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -57,9 +57,9 @@ public class Documento implements Serializable {
     @Lob
     private byte[] contenuto;
     @Basic(optional = false)
-    @Column(name = "uid_risorsa")
     @NotNull
     @Size(min = 1, max = 36)
+    @Column(name = "uid_risorsa")
     private String uidRisorsa;
     @JoinColumn(name = "id_categoria", referencedColumnName = "id")
     @ManyToOne
@@ -75,12 +75,13 @@ public class Documento implements Serializable {
         this.id = id;
     }
 
-    public Documento(Integer id, String nomefile, long dimensione, String checksum, byte[] contenuto) {
+    public Documento(Integer id, String nomefile, long dimensione, String checksum, byte[] contenuto, String uidRisorsa) {
         this.id = id;
         this.nomefile = nomefile;
         this.dimensione = dimensione;
         this.checksum = checksum;
         this.contenuto = contenuto;
+        this.uidRisorsa = uidRisorsa;
     }
 
     public Integer getId() {
@@ -115,7 +116,6 @@ public class Documento implements Serializable {
         this.checksum = checksum;
     }
 
-    @JsonbTransient
     public byte[] getContenuto() {
         return contenuto;
     }
@@ -131,8 +131,7 @@ public class Documento implements Serializable {
     public void setUidRisorsa(String uidRisorsa) {
         this.uidRisorsa = uidRisorsa;
     }
-        
-    @JsonbTransient
+
     public Categoria getIdCategoria() {
         return idCategoria;
     }
@@ -141,7 +140,6 @@ public class Documento implements Serializable {
         this.idCategoria = idCategoria;
     }
 
-    @JsonbTransient
     public Corso getIdCorso() {
         return idCorso;
     }

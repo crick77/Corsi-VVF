@@ -58,7 +58,7 @@ public class CorsiService extends BaseService {
     @Inject
     MiscServices ms;
     @Inject
-    DeltaService ds;
+    SynchService ds;
     
     /*********************************************************
     *

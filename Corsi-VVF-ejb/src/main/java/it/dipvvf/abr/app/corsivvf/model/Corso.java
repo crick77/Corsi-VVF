@@ -8,7 +8,6 @@ package it.dipvvf.abr.app.corsivvf.model;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,7 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author riccardo.iovenitti
+ * @author ospite
  */
 @Entity
 @XmlRootElement
@@ -41,7 +40,8 @@ import javax.xml.bind.annotation.XmlTransient;
     , @NamedQuery(name = "Corso.findByDataAggiornamento", query = "SELECT c FROM Corso c WHERE c.dataAggiornamento = :dataAggiornamento")
     , @NamedQuery(name = "Corso.findByTipologia", query = "SELECT c FROM Corso c WHERE c.tipologia = :tipologia")
     , @NamedQuery(name = "Corso.findByNote", query = "SELECT c FROM Corso c WHERE c.note = :note")
-    , @NamedQuery(name = "Corso.findByAbilitato", query = "SELECT c FROM Corso c WHERE c.abilitato = :abilitato")})
+    , @NamedQuery(name = "Corso.findByAbilitato", query = "SELECT c FROM Corso c WHERE c.abilitato = :abilitato")
+    , @NamedQuery(name = "Corso.findByUidRisorsa", query = "SELECT c FROM Corso c WHERE c.uidRisorsa = :uidRisorsa")})
 public class Corso implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -73,9 +73,9 @@ public class Corso implements Serializable {
     @NotNull
     private boolean abilitato;
     @Basic(optional = false)
-    @Column(name = "uid_risorsa")
     @NotNull
     @Size(min = 1, max = 36)
+    @Column(name = "uid_risorsa")
     private String uidRisorsa;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idCorso")
     private Collection<Installazione> installazioneCollection;
@@ -91,12 +91,13 @@ public class Corso implements Serializable {
         this.id = id;
     }
 
-    public Corso(Integer id, String titolo, Date dataCreazione, Date dataAggiornamento, boolean abilitato) {
+    public Corso(Integer id, String titolo, Date dataCreazione, Date dataAggiornamento, boolean abilitato, String uidRisorsa) {
         this.id = id;
         this.titolo = titolo;
         this.dataCreazione = dataCreazione;
         this.dataAggiornamento = dataAggiornamento;
         this.abilitato = abilitato;
+        this.uidRisorsa = uidRisorsa;
     }
 
     public Integer getId() {
@@ -170,9 +171,8 @@ public class Corso implements Serializable {
     public void setUidRisorsa(String uidRisorsa) {
         this.uidRisorsa = uidRisorsa;
     }
-        
+
     @XmlTransient
-    @JsonbTransient
     public Collection<Installazione> getInstallazioneCollection() {
         return installazioneCollection;
     }
@@ -182,7 +182,6 @@ public class Corso implements Serializable {
     }
 
     @XmlTransient
-    @JsonbTransient
     public Collection<Categoria> getCategoriaCollection() {
         return categoriaCollection;
     }
@@ -192,7 +191,6 @@ public class Corso implements Serializable {
     }
 
     @XmlTransient
-    @JsonbTransient
     public Collection<Documento> getDocumentoCollection() {
         return documentoCollection;
     }

@@ -15,6 +15,7 @@ import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Dispositivo;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
 import it.dipvvf.abr.app.corsivvf.model.Installazione;
+import it.dipvvf.abr.app.corsivvf.model.Sincronizzazione;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -172,11 +173,17 @@ public class DispositiviService extends BaseService {
             inst.setDataInstallazione(dataSinc);
             em.persist(inst);
 
+            Sincronizzazione sinc = new Sincronizzazione();
+            sinc.setIdDispositivo(disp);
+            sinc.setDataora(dataSinc);
+            sinc.setStato(DeltaConst.Status.PENDING.toString());
+            em.persist(sinc);
+            
             Delta d = new Delta();
             
+            d.setIdSincronizzazione(sinc);
             d.setRisorsa(corso.getTitolo());
             d.setDataSincronizzazione(dataSinc);
-            d.setIdDispositivo(disp);
             d.setOperazione(DeltaConst.Operation.ADD.toString());
             d.setTipologia(DeltaConst.ResourceType.COURSE.toString());
             d.setOrdine(order.next());
@@ -192,9 +199,9 @@ public class DispositiviService extends BaseService {
             for (Categoria categoria : categorie) {
                 d = new Delta();
                 
+                d.setIdSincronizzazione(sinc);
                 d.setRisorsa(categoria.getNome());
                 d.setDataSincronizzazione(dataSinc);
-                d.setIdDispositivo(disp);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
                 d.setOrdine(order.next());
@@ -212,9 +219,9 @@ public class DispositiviService extends BaseService {
             for(Documento documento : documenti) {
                 d = new Delta();
                 
+                d.setIdSincronizzazione(sinc);
                 d.setRisorsa(documento.getNomefile());
                 d.setDataSincronizzazione(dataSinc);
-                d.setIdDispositivo(disp);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());
@@ -233,9 +240,9 @@ public class DispositiviService extends BaseService {
             for(Documento documento : documenti) {
                 d = new Delta();
                 
+                d.setIdSincronizzazione(sinc);
                 d.setRisorsa(documento.getNomefile());
                 d.setDataSincronizzazione(dataSinc);
-                d.setIdDispositivo(disp);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());

@@ -7,7 +7,6 @@ package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
 import java.util.Collection;
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -24,7 +23,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author riccardo.iovenitti
+ * @author ospite
  */
 @Entity
 @XmlRootElement
@@ -70,9 +69,9 @@ public class Dispositivo implements Serializable {
     @Size(max = 256)
     private String token;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idDispositivo")
-    private Collection<Installazione> installazioneCollection;
+    private Collection<Sincronizzazione> sincronizzazioneCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idDispositivo")
-    private Collection<Delta> deltaCollection;
+    private Collection<Installazione> installazioneCollection;
 
     public Dispositivo() {
     }
@@ -162,23 +161,21 @@ public class Dispositivo implements Serializable {
     }
 
     @XmlTransient
-    @JsonbTransient
+    public Collection<Sincronizzazione> getSincronizzazioneCollection() {
+        return sincronizzazioneCollection;
+    }
+
+    public void setSincronizzazioneCollection(Collection<Sincronizzazione> sincronizzazioneCollection) {
+        this.sincronizzazioneCollection = sincronizzazioneCollection;
+    }
+
+    @XmlTransient
     public Collection<Installazione> getInstallazioneCollection() {
         return installazioneCollection;
     }
 
     public void setInstallazioneCollection(Collection<Installazione> installazioneCollection) {
         this.installazioneCollection = installazioneCollection;
-    }
-
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Delta> getDeltaCollection() {
-        return deltaCollection;
-    }
-
-    public void setDeltaCollection(Collection<Delta> deltaCollection) {
-        this.deltaCollection = deltaCollection;
     }
 
     @Override

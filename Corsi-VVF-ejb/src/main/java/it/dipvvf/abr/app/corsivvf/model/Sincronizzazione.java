@@ -6,9 +6,9 @@
 package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,10 +17,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,10 +32,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Installazione.findAll", query = "SELECT i FROM Installazione i")
-    , @NamedQuery(name = "Installazione.findById", query = "SELECT i FROM Installazione i WHERE i.id = :id")
-    , @NamedQuery(name = "Installazione.findByDataInstallazione", query = "SELECT i FROM Installazione i WHERE i.dataInstallazione = :dataInstallazione")})
-public class Installazione implements Serializable {
+    @NamedQuery(name = "Sincronizzazione.findAll", query = "SELECT s FROM Sincronizzazione s")
+    , @NamedQuery(name = "Sincronizzazione.findById", query = "SELECT s FROM Sincronizzazione s WHERE s.id = :id")
+    , @NamedQuery(name = "Sincronizzazione.findByDataora", query = "SELECT s FROM Sincronizzazione s WHERE s.dataora = :dataora")
+    , @NamedQuery(name = "Sincronizzazione.findByStato", query = "SELECT s FROM Sincronizzazione s WHERE s.stato = :stato")})
+public class Sincronizzazione implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -41,26 +45,29 @@ public class Installazione implements Serializable {
     private Integer id;
     @Basic(optional = false)
     @NotNull
-    @Column(name = "data_installazione")
-    @Temporal(TemporalType.DATE)
-    private Date dataInstallazione;
-    @JoinColumn(name = "id_corso", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private Corso idCorso;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dataora;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 32)
+    private String stato;
     @JoinColumn(name = "id_dispositivo", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Dispositivo idDispositivo;
+    @OneToMany(mappedBy = "idSincronizzazione")
+    private Collection<Delta> deltaCollection;
 
-    public Installazione() {
+    public Sincronizzazione() {
     }
 
-    public Installazione(Integer id) {
+    public Sincronizzazione(Integer id) {
         this.id = id;
     }
 
-    public Installazione(Integer id, Date dataInstallazione) {
+    public Sincronizzazione(Integer id, Date dataora, String stato) {
         this.id = id;
-        this.dataInstallazione = dataInstallazione;
+        this.dataora = dataora;
+        this.stato = stato;
     }
 
     public Integer getId() {
@@ -71,20 +78,20 @@ public class Installazione implements Serializable {
         this.id = id;
     }
 
-    public Date getDataInstallazione() {
-        return dataInstallazione;
+    public Date getDataora() {
+        return dataora;
     }
 
-    public void setDataInstallazione(Date dataInstallazione) {
-        this.dataInstallazione = dataInstallazione;
+    public void setDataora(Date dataora) {
+        this.dataora = dataora;
     }
 
-    public Corso getIdCorso() {
-        return idCorso;
+    public String getStato() {
+        return stato;
     }
 
-    public void setIdCorso(Corso idCorso) {
-        this.idCorso = idCorso;
+    public void setStato(String stato) {
+        this.stato = stato;
     }
 
     public Dispositivo getIdDispositivo() {
@@ -93,6 +100,15 @@ public class Installazione implements Serializable {
 
     public void setIdDispositivo(Dispositivo idDispositivo) {
         this.idDispositivo = idDispositivo;
+    }
+
+    @XmlTransient
+    public Collection<Delta> getDeltaCollection() {
+        return deltaCollection;
+    }
+
+    public void setDeltaCollection(Collection<Delta> deltaCollection) {
+        this.deltaCollection = deltaCollection;
     }
 
     @Override
@@ -105,10 +121,10 @@ public class Installazione implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Installazione)) {
+        if (!(object instanceof Sincronizzazione)) {
             return false;
         }
-        Installazione other = (Installazione) object;
+        Sincronizzazione other = (Sincronizzazione) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -117,7 +133,7 @@ public class Installazione implements Serializable {
 
     @Override
     public String toString() {
-        return "it.dipvvf.abr.app.corsivvf.model.Installazione[ id=" + id + " ]";
+        return "it.dipvvf.abr.app.corsivvf.model.Sincronizzazione[ id=" + id + " ]";
     }
     
 }

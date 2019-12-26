@@ -7,7 +7,6 @@ package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
 import java.util.Collection;
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author riccardo.iovenitti
+ * @author ospite
  */
 @Entity
 @XmlRootElement
@@ -34,7 +33,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Categoria.findAll", query = "SELECT c FROM Categoria c")
     , @NamedQuery(name = "Categoria.findById", query = "SELECT c FROM Categoria c WHERE c.id = :id")
     , @NamedQuery(name = "Categoria.findByNome", query = "SELECT c FROM Categoria c WHERE c.nome = :nome")
-    , @NamedQuery(name = "Categoria.findByDescrizione", query = "SELECT c FROM Categoria c WHERE c.descrizione = :descrizione")})
+    , @NamedQuery(name = "Categoria.findByDescrizione", query = "SELECT c FROM Categoria c WHERE c.descrizione = :descrizione")
+    , @NamedQuery(name = "Categoria.findByUidRisorsa", query = "SELECT c FROM Categoria c WHERE c.uidRisorsa = :uidRisorsa")})
 public class Categoria implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -48,10 +48,10 @@ public class Categoria implements Serializable {
     private String nome;
     @Size(max = 250)
     private String descrizione;
-    @Column(name = "uid_risorsa")
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 36)
+    @Column(name = "uid_risorsa")
     private String uidRisorsa;
     @JoinColumn(name = "id_corso", referencedColumnName = "id")
     @ManyToOne(optional = false)
@@ -66,9 +66,10 @@ public class Categoria implements Serializable {
         this.id = id;
     }
 
-    public Categoria(Integer id, String nome) {
+    public Categoria(Integer id, String nome, String uidRisorsa) {
         this.id = id;
         this.nome = nome;
+        this.uidRisorsa = uidRisorsa;
     }
 
     public Integer getId() {
@@ -102,8 +103,7 @@ public class Categoria implements Serializable {
     public void setUidRisorsa(String uidRisorsa) {
         this.uidRisorsa = uidRisorsa;
     }
-    
-    @JsonbTransient
+
     public Corso getIdCorso() {
         return idCorso;
     }
@@ -113,7 +113,6 @@ public class Categoria implements Serializable {
     }
 
     @XmlTransient
-    @JsonbTransient
     public Collection<Documento> getDocumentoCollection() {
         return documentoCollection;
     }
