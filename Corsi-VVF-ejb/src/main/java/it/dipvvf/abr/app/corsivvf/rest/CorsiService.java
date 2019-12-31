@@ -58,7 +58,7 @@ public class CorsiService extends BaseService {
     @Inject
     MiscServices ms;
     @Inject
-    SynchService ds;
+    DeltaService ds;
     
     /*********************************************************
     *
@@ -249,7 +249,7 @@ public class CorsiService extends BaseService {
             cat.setUidRisorsa(ms.generateUID());
             em.persist(cat);
                        
-            ds.enqueueCategoryDelta(cat, DeltaConst.Operation.ADD);
+            ds. enqueueCategoryDelta(cat, DeltaConst.Operation.ADD);
 
             em.flush();
         } catch (Exception e) {
@@ -271,7 +271,7 @@ public class CorsiService extends BaseService {
      * @return 
      */
     @PUT
-    @Path("{id: \\d+}/categories/{idcat}")
+    @Path("{id: \\d+}/categories/{idcat: \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateCourseCategory(@PathParam("id") int id, @PathParam("idcat") Integer idCat, Categoria categoria) {
         Corso c = em.find(Corso.class, id);
@@ -523,20 +523,13 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/documents")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addNewCourseDocument(@PathParam("id") int id, @Context HttpServletRequest req, @Context UriInfo info) {
-        try {
-            System.out.println("uploading to ID=" + id + " File=" + req.getParts());
-        }
-        catch(IOException | ServletException e) {            
-        }
-    
         Corso corso = em.find(Corso.class, id);
         if (corso == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        
-        Part documentData;
+       
         try {
-            documentData = req.getPart("document");
+            Part documentData = req.getPart("document");
             if (documentData == null) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }                
@@ -585,12 +578,6 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addNewCourseCategoryDocument(@PathParam("id") int id, @PathParam("id") int idCat, @Context HttpServletRequest req, @Context UriInfo info) {
-        try {
-            System.out.println("uploading to ID=" + id + " File=" + req.getParts());
-        }
-        catch(IOException | ServletException e) {            
-        }
-    
         Corso corso = em.find(Corso.class, id);
         if (corso == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -603,10 +590,9 @@ public class CorsiService extends BaseService {
         if (cat == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        
-        Part documentData;
+        ;
         try {
-            documentData = req.getPart("document");
+            Part documentData = req.getPart("document");
             if (documentData == null) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }                

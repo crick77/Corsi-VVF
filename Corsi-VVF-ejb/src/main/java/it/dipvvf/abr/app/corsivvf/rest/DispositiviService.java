@@ -174,7 +174,7 @@ public class DispositiviService extends BaseService {
             em.persist(inst);
 
             Sincronizzazione sinc = new Sincronizzazione();
-            sinc.setIdDispositivo(disp);
+            sinc.setIdInstallazione(inst);
             sinc.setDataora(dataSinc);
             sinc.setStato(DeltaConst.Status.PENDING.toString());
             em.persist(sinc);
@@ -183,7 +183,6 @@ public class DispositiviService extends BaseService {
             
             d.setIdSincronizzazione(sinc);
             d.setRisorsa(corso.getTitolo());
-            d.setDataSincronizzazione(dataSinc);
             d.setOperazione(DeltaConst.Operation.ADD.toString());
             d.setTipologia(DeltaConst.ResourceType.COURSE.toString());
             d.setOrdine(order.next());
@@ -201,7 +200,6 @@ public class DispositiviService extends BaseService {
                 
                 d.setIdSincronizzazione(sinc);
                 d.setRisorsa(categoria.getNome());
-                d.setDataSincronizzazione(dataSinc);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
                 d.setOrdine(order.next());
@@ -221,7 +219,6 @@ public class DispositiviService extends BaseService {
                 
                 d.setIdSincronizzazione(sinc);
                 d.setRisorsa(documento.getNomefile());
-                d.setDataSincronizzazione(dataSinc);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());
@@ -242,7 +239,6 @@ public class DispositiviService extends BaseService {
                 
                 d.setIdSincronizzazione(sinc);
                 d.setRisorsa(documento.getNomefile());
-                d.setDataSincronizzazione(dataSinc);
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
                 d.setOrdine(order.next());

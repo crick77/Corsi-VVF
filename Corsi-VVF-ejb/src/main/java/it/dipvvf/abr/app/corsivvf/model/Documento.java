@@ -6,6 +6,7 @@
 package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,6 +21,7 @@ import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -28,12 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Documento.findAll", query = "SELECT d FROM Documento d")
-    , @NamedQuery(name = "Documento.findById", query = "SELECT d FROM Documento d WHERE d.id = :id")
-    , @NamedQuery(name = "Documento.findByNomefile", query = "SELECT d FROM Documento d WHERE d.nomefile = :nomefile")
-    , @NamedQuery(name = "Documento.findByDimensione", query = "SELECT d FROM Documento d WHERE d.dimensione = :dimensione")
-    , @NamedQuery(name = "Documento.findByChecksum", query = "SELECT d FROM Documento d WHERE d.checksum = :checksum")
-    , @NamedQuery(name = "Documento.findByUidRisorsa", query = "SELECT d FROM Documento d WHERE d.uidRisorsa = :uidRisorsa")})
+    @NamedQuery(name = "Documento.findAll", query = "SELECT d FROM Documento d")})
 public class Documento implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -116,6 +113,8 @@ public class Documento implements Serializable {
         this.checksum = checksum;
     }
 
+    @JsonbTransient
+    @XmlTransient
     public byte[] getContenuto() {
         return contenuto;
     }
@@ -132,6 +131,8 @@ public class Documento implements Serializable {
         this.uidRisorsa = uidRisorsa;
     }
 
+    @JsonbTransient
+    @XmlTransient
     public Categoria getIdCategoria() {
         return idCategoria;
     }
@@ -140,6 +141,8 @@ public class Documento implements Serializable {
         this.idCategoria = idCategoria;
     }
 
+    @JsonbTransient
+    @XmlTransient
     public Corso getIdCorso() {
         return idCorso;
     }

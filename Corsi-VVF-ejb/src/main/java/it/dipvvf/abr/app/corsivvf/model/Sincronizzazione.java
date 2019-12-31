@@ -8,6 +8,7 @@ package it.dipvvf.abr.app.corsivvf.model;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,10 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Sincronizzazione.findAll", query = "SELECT s FROM Sincronizzazione s")
-    , @NamedQuery(name = "Sincronizzazione.findById", query = "SELECT s FROM Sincronizzazione s WHERE s.id = :id")
-    , @NamedQuery(name = "Sincronizzazione.findByDataora", query = "SELECT s FROM Sincronizzazione s WHERE s.dataora = :dataora")
-    , @NamedQuery(name = "Sincronizzazione.findByStato", query = "SELECT s FROM Sincronizzazione s WHERE s.stato = :stato")})
+    @NamedQuery(name = "Sincronizzazione.findAll", query = "SELECT s FROM Sincronizzazione s")})
 public class Sincronizzazione implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -51,9 +49,9 @@ public class Sincronizzazione implements Serializable {
     @NotNull
     @Size(min = 1, max = 32)
     private String stato;
-    @JoinColumn(name = "id_dispositivo", referencedColumnName = "id")
+    @JoinColumn(name = "id_installazione", referencedColumnName = "id")
     @ManyToOne(optional = false)
-    private Dispositivo idDispositivo;
+    private Installazione idInstallazione;
     @OneToMany(mappedBy = "idSincronizzazione")
     private Collection<Delta> deltaCollection;
 
@@ -94,15 +92,18 @@ public class Sincronizzazione implements Serializable {
         this.stato = stato;
     }
 
-    public Dispositivo getIdDispositivo() {
-        return idDispositivo;
+    @XmlTransient
+    @JsonbTransient
+    public Installazione getIdInstallazione() {
+        return idInstallazione;
     }
 
-    public void setIdDispositivo(Dispositivo idDispositivo) {
-        this.idDispositivo = idDispositivo;
+    public void setIdInstallazione(Installazione idInstallazione) {
+        this.idInstallazione = idInstallazione;
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Delta> getDeltaCollection() {
         return deltaCollection;
     }

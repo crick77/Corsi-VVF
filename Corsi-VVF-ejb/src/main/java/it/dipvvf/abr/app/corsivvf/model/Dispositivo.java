@@ -7,6 +7,7 @@ package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
 import java.util.Collection;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -28,16 +29,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Dispositivo.findAll", query = "SELECT d FROM Dispositivo d")
-    , @NamedQuery(name = "Dispositivo.findById", query = "SELECT d FROM Dispositivo d WHERE d.id = :id")
-    , @NamedQuery(name = "Dispositivo.findByMarca", query = "SELECT d FROM Dispositivo d WHERE d.marca = :marca")
-    , @NamedQuery(name = "Dispositivo.findByModello", query = "SELECT d FROM Dispositivo d WHERE d.modello = :modello")
-    , @NamedQuery(name = "Dispositivo.findBySerialnr", query = "SELECT d FROM Dispositivo d WHERE d.serialnr = :serialnr")
-    , @NamedQuery(name = "Dispositivo.findByInventario", query = "SELECT d FROM Dispositivo d WHERE d.inventario = :inventario")
-    , @NamedQuery(name = "Dispositivo.findByNote", query = "SELECT d FROM Dispositivo d WHERE d.note = :note")
-    , @NamedQuery(name = "Dispositivo.findByAbilitato", query = "SELECT d FROM Dispositivo d WHERE d.abilitato = :abilitato")
-    , @NamedQuery(name = "Dispositivo.findByDeviceid", query = "SELECT d FROM Dispositivo d WHERE d.deviceid = :deviceid")
-    , @NamedQuery(name = "Dispositivo.findByToken", query = "SELECT d FROM Dispositivo d WHERE d.token = :token")})
+    @NamedQuery(name = "Dispositivo.findAll", query = "SELECT d FROM Dispositivo d")})
 public class Dispositivo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -68,8 +60,6 @@ public class Dispositivo implements Serializable {
     private String deviceid;
     @Size(max = 256)
     private String token;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idDispositivo")
-    private Collection<Sincronizzazione> sincronizzazioneCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idDispositivo")
     private Collection<Installazione> installazioneCollection;
 
@@ -161,15 +151,7 @@ public class Dispositivo implements Serializable {
     }
 
     @XmlTransient
-    public Collection<Sincronizzazione> getSincronizzazioneCollection() {
-        return sincronizzazioneCollection;
-    }
-
-    public void setSincronizzazioneCollection(Collection<Sincronizzazione> sincronizzazioneCollection) {
-        this.sincronizzazioneCollection = sincronizzazioneCollection;
-    }
-
-    @XmlTransient
+    @JsonbTransient
     public Collection<Installazione> getInstallazioneCollection() {
         return installazioneCollection;
     }

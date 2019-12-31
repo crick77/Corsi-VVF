@@ -6,8 +6,11 @@
 package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,10 +20,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,9 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Installazione.findAll", query = "SELECT i FROM Installazione i")
-    , @NamedQuery(name = "Installazione.findById", query = "SELECT i FROM Installazione i WHERE i.id = :id")
-    , @NamedQuery(name = "Installazione.findByDataInstallazione", query = "SELECT i FROM Installazione i WHERE i.dataInstallazione = :dataInstallazione")})
+    @NamedQuery(name = "Installazione.findAll", query = "SELECT i FROM Installazione i")})
 public class Installazione implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -44,6 +47,8 @@ public class Installazione implements Serializable {
     @Column(name = "data_installazione")
     @Temporal(TemporalType.DATE)
     private Date dataInstallazione;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idInstallazione")
+    private Collection<Sincronizzazione> sincronizzazioneCollection;
     @JoinColumn(name = "id_corso", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Corso idCorso;
@@ -79,6 +84,18 @@ public class Installazione implements Serializable {
         this.dataInstallazione = dataInstallazione;
     }
 
+    @XmlTransient
+    @JsonbTransient
+    public Collection<Sincronizzazione> getSincronizzazioneCollection() {
+        return sincronizzazioneCollection;
+    }
+
+    public void setSincronizzazioneCollection(Collection<Sincronizzazione> sincronizzazioneCollection) {
+        this.sincronizzazioneCollection = sincronizzazioneCollection;
+    }
+
+    @XmlTransient
+    @JsonbTransient
     public Corso getIdCorso() {
         return idCorso;
     }
@@ -87,6 +104,8 @@ public class Installazione implements Serializable {
         this.idCorso = idCorso;
     }
 
+    @XmlTransient
+    @JsonbTransient
     public Dispositivo getIdDispositivo() {
         return idDispositivo;
     }

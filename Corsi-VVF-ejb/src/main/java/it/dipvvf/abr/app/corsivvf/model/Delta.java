@@ -6,7 +6,7 @@
 package it.dipvvf.abr.app.corsivvf.model;
 
 import java.io.Serializable;
-import java.util.Date;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,11 +17,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -30,19 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Delta.findAll", query = "SELECT d FROM Delta d")
-    , @NamedQuery(name = "Delta.findById", query = "SELECT d FROM Delta d WHERE d.id = :id")
-    , @NamedQuery(name = "Delta.findByDataSincronizzazione", query = "SELECT d FROM Delta d WHERE d.dataSincronizzazione = :dataSincronizzazione")
-    , @NamedQuery(name = "Delta.findByTipologia", query = "SELECT d FROM Delta d WHERE d.tipologia = :tipologia")
-    , @NamedQuery(name = "Delta.findByRisorsa", query = "SELECT d FROM Delta d WHERE d.risorsa = :risorsa")
-    , @NamedQuery(name = "Delta.findByMd5", query = "SELECT d FROM Delta d WHERE d.md5 = :md5")
-    , @NamedQuery(name = "Delta.findByOrdine", query = "SELECT d FROM Delta d WHERE d.ordine = :ordine")
-    , @NamedQuery(name = "Delta.findByStato", query = "SELECT d FROM Delta d WHERE d.stato = :stato")
-    , @NamedQuery(name = "Delta.findByOperazione", query = "SELECT d FROM Delta d WHERE d.operazione = :operazione")
-    , @NamedQuery(name = "Delta.findByUidRisorsaPadre", query = "SELECT d FROM Delta d WHERE d.uidRisorsaPadre = :uidRisorsaPadre")
-    , @NamedQuery(name = "Delta.findByDimensione", query = "SELECT d FROM Delta d WHERE d.dimensione = :dimensione")
-    , @NamedQuery(name = "Delta.findByTipoRisorsaPadre", query = "SELECT d FROM Delta d WHERE d.tipoRisorsaPadre = :tipoRisorsaPadre")
-    , @NamedQuery(name = "Delta.findByUidRisorsa", query = "SELECT d FROM Delta d WHERE d.uidRisorsa = :uidRisorsa")})
+    @NamedQuery(name = "Delta.findAll", query = "SELECT d FROM Delta d")})
 public class Delta implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -50,11 +37,6 @@ public class Delta implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     private Integer id;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "data_sincronizzazione")
-    @Temporal(TemporalType.DATE)
-    private Date dataSincronizzazione;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 32)
@@ -99,9 +81,8 @@ public class Delta implements Serializable {
         this.id = id;
     }
 
-    public Delta(Integer id, Date dataSincronizzazione, String tipologia, String risorsa, int ordine, String stato, String operazione, long dimensione) {
+    public Delta(Integer id, String tipologia, String risorsa, int ordine, String stato, String operazione, long dimensione) {
         this.id = id;
-        this.dataSincronizzazione = dataSincronizzazione;
         this.tipologia = tipologia;
         this.risorsa = risorsa;
         this.ordine = ordine;
@@ -116,14 +97,6 @@ public class Delta implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Date getDataSincronizzazione() {
-        return dataSincronizzazione;
-    }
-
-    public void setDataSincronizzazione(Date dataSincronizzazione) {
-        this.dataSincronizzazione = dataSincronizzazione;
     }
 
     public String getTipologia() {
@@ -206,6 +179,8 @@ public class Delta implements Serializable {
         this.uidRisorsa = uidRisorsa;
     }
 
+    @JsonbTransient
+    @XmlTransient
     public Sincronizzazione getIdSincronizzazione() {
         return idSincronizzazione;
     }

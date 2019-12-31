@@ -8,6 +8,7 @@ package it.dipvvf.abr.app.corsivvf.model;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -32,16 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Corso.findAll", query = "SELECT c FROM Corso c")
-    , @NamedQuery(name = "Corso.findById", query = "SELECT c FROM Corso c WHERE c.id = :id")
-    , @NamedQuery(name = "Corso.findByTitolo", query = "SELECT c FROM Corso c WHERE c.titolo = :titolo")
-    , @NamedQuery(name = "Corso.findByDescrizione", query = "SELECT c FROM Corso c WHERE c.descrizione = :descrizione")
-    , @NamedQuery(name = "Corso.findByDataCreazione", query = "SELECT c FROM Corso c WHERE c.dataCreazione = :dataCreazione")
-    , @NamedQuery(name = "Corso.findByDataAggiornamento", query = "SELECT c FROM Corso c WHERE c.dataAggiornamento = :dataAggiornamento")
-    , @NamedQuery(name = "Corso.findByTipologia", query = "SELECT c FROM Corso c WHERE c.tipologia = :tipologia")
-    , @NamedQuery(name = "Corso.findByNote", query = "SELECT c FROM Corso c WHERE c.note = :note")
-    , @NamedQuery(name = "Corso.findByAbilitato", query = "SELECT c FROM Corso c WHERE c.abilitato = :abilitato")
-    , @NamedQuery(name = "Corso.findByUidRisorsa", query = "SELECT c FROM Corso c WHERE c.uidRisorsa = :uidRisorsa")})
+    @NamedQuery(name = "Corso.findAll", query = "SELECT c FROM Corso c")})
 public class Corso implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -173,6 +165,7 @@ public class Corso implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Installazione> getInstallazioneCollection() {
         return installazioneCollection;
     }
@@ -182,6 +175,7 @@ public class Corso implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Categoria> getCategoriaCollection() {
         return categoriaCollection;
     }
@@ -191,6 +185,7 @@ public class Corso implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Documento> getDocumentoCollection() {
         return documentoCollection;
     }

@@ -11,10 +11,12 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
-import java.rmi.server.UID;
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
 import javax.ejb.TransactionAttribute;
@@ -31,10 +33,16 @@ import javax.persistence.PersistenceContext;
 public class MiscServices {
     @PersistenceContext
     EntityManager em;
+    ObjectMapper mapper;
     private static final String SECRET = "trytodecryptthisbastard!!";
     private static final String ISSUER = "CorsiVVF.dipvvf.it";
     public static final long NO_EXPIRE = -1;
 
+    @PostConstruct
+    void initialize() {
+        mapper = new ObjectMapper();
+    }
+    
     /**
      * 
      * @param id
@@ -63,6 +71,14 @@ public class MiscServices {
         } catch (JWTVerificationException jwte) {
             return null;
         }
+        catch(IllegalArgumentException iae) {
+            System.err.println("Decoding JWT error IllegalArgument: "+iae);
+            return null;
+        }
+        catch(Exception e) {
+            System.err.println("Decoding JWT error Exception: "+e);
+            return null;
+        }
     }
 
     /**
@@ -85,6 +101,16 @@ public class MiscServices {
         return UUID.randomUUID().toString().toUpperCase();
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public <T extends Object> T mapToObject(String s, Class<T> clazz) {
+        try {
+            return mapper.readValue(s, clazz);
+        }
+        catch(JsonProcessingException jpe) {
+            return null;
+        }
+    } 
+    
     /**
      * to be removed - servlet upload
      *

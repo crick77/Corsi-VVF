@@ -5,7 +5,10 @@
  */
 package it.dipvvf.abr.app.corsivvf.rest;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import it.dipvvf.abr.app.corsivvf.bean.Counter;
 import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
+import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.model.Categoria;
 import it.dipvvf.abr.app.corsivvf.model.Delta;
 import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
@@ -17,6 +20,9 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -32,111 +38,108 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  * Servizi dedicati al dispositivo
- * 
+ *
  * @author ospite
  */
 @Stateless
-@Path("pending")
+@Path("deltas")
 @Produces(MediaType.APPLICATION_JSON)
 public class DeltaService extends BaseService {
+
     @PersistenceContext
     EntityManager em;
-    
+    @Inject
+    MiscServices ms;
+
     /**
      *
-     * @param devUid
+     * @param devId
+     * @param devToken
      * @param uriInfo
      * @return
      */
     @GET
-    public Response getPendingStates(@HeaderParam("Device-uid") int devUid, @Context UriInfo uriInfo) {
-        List<Integer> lPending = em.createQuery("SELECT s.id FROM Sincronizzazione s JOIN Dispositivo d WHERE s.stato = :status AND d.deviceid = :devUid ORDER BY s.dataora ASC", Integer.class)
+    public Response getPendingStates(@HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken, @Context UriInfo uriInfo) {
+        if (devId == null || devToken == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        //DecodedJWT token = ms.decodeToken(devToken);
+        //if (token == null) 
+        //    return Response.status(Response.Status.UNAUTHORIZED).build();
+        List<Integer> lPending = em.createQuery("SELECT d.id FROM Delta d INNER JOIN d.idSincronizzazione s INNER JOIN s.idInstallazione i INNER JOIN i.idDispositivo dev WHERE s.stato = :status AND dev.token = :token AND dev.deviceid = :devid ORDER BY s.dataora ASC", Integer.class)
                 .setParameter("status", DeltaConst.Status.PENDING.toString())
-                .setParameter("devUid", devUid)
+                .setParameter("token", devToken)
+                .setParameter("devid", devId)
+                .setMaxResults(1)
                 .getResultList();
 
-        return (lPending.isEmpty()) ? Response.noContent().build() : Response.ok(resourcesToURI(uriInfo, lPending)).build();
+        return Response.ok(resourcesToURI(uriInfo, lPending)).build();
     }
 
     /**
      *
-     * @param idInst
-     * @param devUid
-     * @return
-     */
-    @GET
-    @Path("{idinst: \\d+}")
-    public Response getPendingStateDetail(@PathParam("idinst") int idInst, @HeaderParam("Device-uid") int devUid) {
-        try {
-            Sincronizzazione sinc = em.createQuery("SELECT s FROM Sincronizzazione s JOIN Dispositivo d WHERE s.stato = :status AND d.deviceid = :devUid and s.id = :idinst", Sincronizzazione.class)
-                    .setParameter("status", DeltaConst.Status.PENDING.toString())
-                    .setParameter("devUid", devUid)
-                    .setParameter("idinsta", idInst)
-                    .getSingleResult();
-            
-            return Response.ok(sinc).build();
-        }
-        catch(NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-    }
-
-    /**
-     *
-     * @param idInst
-     * @param devUid
+     * @param devId
+     * @param devToken
      * @param uriInfo
      * @return
      */
     @GET
-    @Path("{idinst: \\d+}/deltas")
-    public Response getPendingStateDeltas(@PathParam("idinst") int idInst, @HeaderParam("Device-uid") int devUid, @Context UriInfo uriInfo) {
-        try {
-            Sincronizzazione sinc = em.createQuery("SELECT s FROM Sincronizzazione s JOIN Dispositivo d WHERE s.stato = :status AND d.deviceid = :devUid and s.id = :idinst", Sincronizzazione.class)
-                    .setParameter("status", DeltaConst.Status.PENDING.toString())
-                    .setParameter("devUid", devUid)
-                    .setParameter("idinsta", idInst)
-                    .getSingleResult();
-            
-            List<Integer> lDelta = em.createQuery("SELECT d.id FROM Delta d WHERE d.idSincronizzazione = :idsinc ORDER BY d.ordine", Integer.class)
-                                .setParameter("idsinc", sinc)
-                                .getResultList();
-            
-            return Response.ok(resourcesToURI(uriInfo, lDelta)).build();
+    @Path("count")
+    public Response getPendingStateCount(@HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken, @Context UriInfo uriInfo) {
+        if (devId == null || devToken == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        catch(NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+
+        //DecodedJWT token = ms.decodeToken(devToken);
+        //if (token == null) 
+        //    return Response.status(Response.Status.UNAUTHORIZED).build();
+        
+        long pendingCount = em.createQuery("SELECT COUNT(d.id) FROM Delta d INNER JOIN d.idSincronizzazione s INNER JOIN s.idInstallazione i INNER JOIN i.idDispositivo dev WHERE s.stato = :status AND dev.token = :token AND dev.deviceid = :devid", Long.class)
+                .setParameter("status", DeltaConst.Status.PENDING.toString())
+                .setParameter("token", devToken)
+                .setParameter("devid", devId)
+                .getSingleResult();
+
+        JsonObject countObj = Json.createObjectBuilder()
+                .add("count", pendingCount)
+                .build();
+
+        return Response.ok(countObj).build();
     }
-    
-    
+
     /**
-     * 
-     * @param idInst
+     *
      * @param idDelta
-     * @param devUid
-     * @return 
+     * @param devId
+     * @param devToken
+     * @return
      */
     @GET
-    @Path("{idinst: \\d+}/deltas/{iddelta: \\d+}")
-    public Response getPendingStateDeltaDetail(@PathParam("idinst") int idInst, @PathParam("iddelta") int idDelta, @HeaderParam("Device-uid") int devUid) {
+    @Path("{iddelta: \\d+}")
+    public Response getPendingStateDetail(@PathParam("iddelta") int idDelta, @HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken) {
         try {
-            String sql = "SELECT d FROM Delta d JOIN Sincronizzazione s JOIN Dispositivo d WHERE s.stato = :status AND d.deviceid = :devUid AND s.id = :idinst AND d.id = iddelta";
+            if (devId == null || devToken == null) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            //DecodedJWT token = ms.decodeToken(devToken);
+            //if (token == null) 
+            //    return Response.status(Response.Status.UNAUTHORIZED).build();
             
-            Delta delta = em.createQuery(sql, Delta.class)
+            Delta delta = em.createQuery("SELECT d FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo dev WHERE s.stato = :status AND dev.deviceid = :devId AND dev.token = :token AND d.id = :iddelta", Delta.class)
                     .setParameter("status", DeltaConst.Status.PENDING.toString())
-                    .setParameter("devUid", devUid)
-                    .setParameter("idinsta", idInst)
+                    .setParameter("devId", devId)
+                    .setParameter("token", devToken)
                     .setParameter("iddelta", idDelta)
                     .getSingleResult();
-            
+
             return Response.ok(delta).build();
-        }
-        catch(NoResultException nre) {
+        } catch (NoResultException nre) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
-    
+
     /**
      * *******************************************************
      *
@@ -144,6 +147,7 @@ public class DeltaService extends BaseService {
      *
      *********************************************************
      */
+    
     /**
      *
      * @param cat
@@ -151,10 +155,6 @@ public class DeltaService extends BaseService {
      */
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void enqueueCategoryDelta(Categoria cat, DeltaConst.Operation operation) {
-        if (removePending(cat.getUidRisorsa())) {
-            return;
-        }
-
         // add new deltas to installable devices
         List<Installazione> lInst = em.createQuery("SELECT i FROM Installazione i WHERE i.idCorso = :corso", Installazione.class)
                 .setParameter("corso", cat.getIdCorso())
@@ -162,39 +162,19 @@ public class DeltaService extends BaseService {
 
         Date syncDate = new Date();
         for (Installazione inst : lInst) {
-            // add progressively new delta(s)
-            int lastOrder = em.createQuery("SELECT MAX(d.ordine) FROM Delta d WHERE d.idDispositivo = :device", Integer.class)
-                    .setParameter("device", inst.getIdDispositivo())
-                    .getSingleResult();
+            // inserisce una nuova sincronizzazione
+            Sincronizzazione sinc = new Sincronizzazione();
+            sinc.setDataora(syncDate);
+            sinc.setIdInstallazione(inst);
+            sinc.setStato(DeltaConst.Status.PENDING.toString());
+            em.persist(sinc);
 
-            // cerca una sincronizzazione per questo dispositivo in stato "pending"
-            List<Sincronizzazione> lSinc = em.createQuery("SELECT s FROM Sincronizzazione s JOIN Dispositivo d WHERE d.idDispositivo = :device AND s.stato = :status ORDER BY s.dataora DESC", Sincronizzazione.class)
-                                    .setParameter("device", inst.getIdDispositivo())
-                                    .setParameter("status", DeltaConst.Status.PENDING.toString())
-                                    .getResultList();
-            
-            Sincronizzazione sinc;
-            if(lSinc.isEmpty()) {
-                // non trovata, inserisce una nuova sincronizzazione
-                sinc = new Sincronizzazione();
-                sinc.setDataora(syncDate);
-                sinc.setIdDispositivo(inst.getIdDispositivo());
-                sinc.setStato(DeltaConst.Status.PENDING.toString());
-                em.persist(sinc);
-            }
-            else {
-                // trovata! usa la più recente
-                sinc = lSinc.get(0);
-            }
-            
             Delta d = new Delta();
-
             d.setRisorsa(cat.getNome());
-            d.setDataSincronizzazione(syncDate);
             d.setIdSincronizzazione(sinc);
             d.setOperazione(operation.toString());
             d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
-            d.setOrdine(lastOrder + 1);
+            d.setOrdine(new Counter().next());
             d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(-1);
             d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE.toString());
@@ -212,10 +192,6 @@ public class DeltaService extends BaseService {
      */
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public void enqueueDocumentDelta(Documento doc, DeltaConst.Operation operation) {
-        if (removePending(doc.getUidRisorsa())) {
-            return;
-        }
-
         // add new deltas to installable devices        
         String sql = "SELECT i FROM Installazione i WHERE i.";
         Object id;
@@ -230,21 +206,20 @@ public class DeltaService extends BaseService {
                 .setParameter("id", id)
                 .getResultList();
 
-        Date syncDate = new Date();
+        Date dataSync = new Date();
         for (Installazione inst : lInst) {
-            // add progressively new delta(s)
-            int lastOrder = em.createQuery("SELECT MAX(d.ordine) FROM Delta d WHERE d.idDispositivo = :device", Integer.class)
-                    .setParameter("device", inst.getIdDispositivo())
-                    .getSingleResult();
+            Sincronizzazione sinc = new Sincronizzazione();
+            sinc.setDataora(dataSync);
+            sinc.setIdInstallazione(inst);
+            sinc.setStato(DeltaConst.Status.PENDING.toString());
+            em.persist(sinc);
 
             Delta d = new Delta();
-
             d.setRisorsa(doc.getNomefile());
-            d.setDataSincronizzazione(syncDate);
-            d.setIdDispositivo(inst.getIdDispositivo());
+            d.setIdSincronizzazione(sinc);
             d.setOperazione(operation.toString());
             d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
-            d.setOrdine(lastOrder + 1);
+            d.setOrdine(new Counter().next());
             d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(doc.getDimensione());
             d.setMd5(doc.getChecksum());
@@ -259,28 +234,5 @@ public class DeltaService extends BaseService {
 
             em.persist(d);
         }
-    }
-
-    /**
-     *
-     * @param resourceUid
-     * @return
-     */
-    @TransactionAttribute(TransactionAttributeType.MANDATORY)
-    private boolean removePending(String resourceUid) {
-        // check if there is a pending operation before issuing a new op
-        List<Delta> lD = em.createQuery("SELECT d FROM Delta d WHERE d.uidRisorsa = :uid AND d.stato = :status", Delta.class)
-                .setParameter("uid", resourceUid)
-                .setParameter("status", DeltaConst.Status.PENDING)
-                .getResultList();
-        if (!lD.isEmpty()) {
-            lD.forEach((d) -> {
-                em.remove(d);
-            });
-
-            return true;
-        }
-
-        return false;
     }
 }

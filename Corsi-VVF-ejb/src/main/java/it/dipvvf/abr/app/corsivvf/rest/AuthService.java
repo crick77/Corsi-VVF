@@ -33,7 +33,7 @@ import javax.xml.ws.WebServiceRef;
  */
 @Stateless
 @LocalBean
-@Path("/auth")
+@Path("auth")
 @Produces(MediaType.APPLICATION_JSON)
 @DependsOn("SessionStorage")
 public class AuthService extends BaseService {
