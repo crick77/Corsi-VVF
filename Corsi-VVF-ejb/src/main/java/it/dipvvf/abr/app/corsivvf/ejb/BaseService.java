@@ -173,6 +173,23 @@ public abstract class BaseService {
     
     /**
      * 
+     * @return 
+     */
+    public Response error() {
+        return Response.serverError().build();
+    }
+    
+    /**
+     * 
+     * @param entity
+     * @return 
+     */
+    public Response error(Object entity) {
+        return Response.serverError().entity(entity).build();
+    }
+    
+    /**
+     * 
      * @param fileName
      * @param data
      * @return 

@@ -75,8 +75,10 @@ public class AuthService extends BaseService {
     public Response loginJson(AccessInfo ai) {            
         if(adService.checkUser(ai.getUsername(), ai.getPassword())) {
             String token = msb.createToken("admin_id", MiscServices.NO_EXPIRE);
-            ss.add(token);
-            return ok(token);
+            if(ss.add(token))
+                return ok(token);
+            else
+                return error("Impossibile utilizzare lo storage di sessione.");
         }
         else {
             return unauthorized();
