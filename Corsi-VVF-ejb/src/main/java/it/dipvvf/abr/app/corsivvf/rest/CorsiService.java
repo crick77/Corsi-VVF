@@ -73,12 +73,7 @@ public class CorsiService extends BaseService {
      */
     @GET
     public Response getCourses(@Context UriInfo info) {
-        List<Integer> lCorsi = em.createQuery("select c.id from Corso c").getResultList();
-        if (lCorsi.isEmpty()) {
-            return Response.noContent().build();
-        } else {
-            return Response.ok(resourcesToURI(info, lCorsi)).build();
-        }
+        return ok(resourcesToURI(info, em.createQuery("select c.id from Corso c").getResultList()));
     }
 
     /**
@@ -90,7 +85,7 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}")
     public Response getCourseDetail(@PathParam("id") int id) {
         Corso c = em.find(Corso.class, id);
-        return (c != null) ? Response.ok(c).build() : Response.status(Response.Status.NOT_FOUND).build();
+        return (c != null) ? ok(c) : notFound();
     }
 
     /**
@@ -102,14 +97,13 @@ public class CorsiService extends BaseService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addNewCourse(Corso corso, @Context UriInfo info) {
-        int count = em.createQuery("SELECT c FROM Corso c where c.titolo = :titolo OR c.id = :id")
+        int count = em.createQuery("SELECT COUNT(c) FROM Corso c where c.titolo = :titolo OR c.id = :id", Integer.class)
                 .setParameter("titolo", corso.getTitolo())
                 .setParameter("id", corso.getId())
-                .getResultList()
-                .size();
+                .getSingleResult();
 
         if (count > 0) {
-            return Response.status(Response.Status.CONFLICT).build();
+            return conflict();
         }
 
         try {
@@ -118,15 +112,12 @@ public class CorsiService extends BaseService {
             corso.setUidRisorsa(ms.generateUID());
             em.persist(corso);
             em.flush();
+            
+            return created(resourceToURI(info, corso.getId()));
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.toString()).build();
+            return badRequest(e);
         }
-
-        UriBuilder builder = info.getAbsolutePathBuilder();
-        builder.path(Integer.toString(corso.getId()));
-
-        return Response.created(builder.build()).build();
     }
     
     /**
@@ -139,15 +130,16 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateCourse(@PathParam("id") int id, Corso corso) {
-        corso.setId(id);
         try {
+            corso.setId(id);
             em.merge(corso);
+            em.flush();
+            
+            return noContent();
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.toString()).build();
+            return badRequest(e.toString());
         }
-
-        return Response.noContent().build();
     }
     
     /**
@@ -165,17 +157,18 @@ public class CorsiService extends BaseService {
         count += em.createQuery("SELECT COUNT(i.id) FROM Installazione i WHERE i.idCorso = :idC", Integer.class).setParameter("idC", c).getSingleResult();
 
         if (count > 0) {
-            return Response.status(Response.Status.CONFLICT).entity("Corso con elementi collegati. Eliminare prima tali collegamenti e riprovare.").build();
+            return conflict("Corso con elementi collegati. Eliminare prima tali collegamenti e riprovare.");
         }
 
         try {
             em.remove(c);
+            em.flush();
+            
+            return noContent();
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.CONFLICT).entity(e.toString()).build();
+            return conflict(e);
         }
-
-        return Response.noContent().build();
     }
     
     /*********************************************************
@@ -194,9 +187,10 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/categories")
     public Response getCourseCategories(@Context UriInfo info, @PathParam("id") int id) {
         Corso c = em.find(Corso.class, id);
-        return (c != null)
-                ? Response.ok(resourcesToURI(info, em.createQuery("SELECT c.id from Categoria c WHERE c.idCorso = :id").setParameter("id", c).getResultList())).build()
-                : Response.status(Response.Status.NOT_FOUND).build();
+        if(c==null) 
+            return notFound();
+        else
+            return ok(resourcesToURI(info, em.createQuery("SELECT cat.id from Categoria cat JOIN cat.idCorso c WHERE c.id = :idcorso").setParameter("idcorso", id).getResultList()));
     }
 
     /**
@@ -208,22 +202,15 @@ public class CorsiService extends BaseService {
     @GET
     @Path("{id: \\d+}/categories/{idcat: \\d+}")
     public Response getCourseCategorieDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCategoria) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        try {
+            return ok(em.createQuery("SELECT cat from Categoria cat JOIN cat.idCorso c WHERE c.id = :idCorso AND cat.id = :idCategoria")
+                    .setParameter("idCorso", idCorso)
+                    .setParameter("idCategoria", idCategoria)
+                    .getSingleResult());
         }
-
-        Categoria cat = em.find(Categoria.class, idCategoria);
-        if (cat == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        catch(NoResultException nre) {
+            return notFound();
         }
-
-        List<Categoria> lCat = em.createQuery("SELECT c from Categoria c WHERE c.idCorso = :idCorso AND c.id = :idCategoria")
-                .setParameter("idCorso", corso)
-                .setParameter("idCategoria", idCategoria)
-                .getResultList();
-
-        return lCat.isEmpty() ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(lCat.get(0)).build();
     }
 
     /**
@@ -238,9 +225,8 @@ public class CorsiService extends BaseService {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addNewCourseCategory(@PathParam("id") int id, Categoria cat, @Context UriInfo info) {
         Corso c = em.find(Corso.class, id);
-
         if (c == null) {
-            return Response.status(Response.Status.PRECONDITION_FAILED).build();
+            return notFound();
         }
 
         try {
@@ -252,15 +238,12 @@ public class CorsiService extends BaseService {
             ds. enqueueCategoryDelta(cat, DeltaConst.Operation.ADD);
 
             em.flush();
+            
+            return created(cat.getId());
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(e.toString()).build();
+            return unprocessableEntity(e);
         }
-
-        UriBuilder builder = info.getAbsolutePathBuilder();
-        builder.path(Integer.toString(cat.getId()));
-
-        return Response.created(builder.build()).build();
     }
     
     /**
@@ -275,25 +258,24 @@ public class CorsiService extends BaseService {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateCourseCategory(@PathParam("id") int id, @PathParam("idcat") Integer idCat, Categoria categoria) {
         Corso c = em.find(Corso.class, id);
-
         if (c == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
 
-        categoria.setId(idCat);
-        categoria.setIdCorso(c);
         try {
+            categoria.setId(idCat);
+            categoria.setIdCorso(c);    
             em.merge(categoria);
             
             ds.enqueueCategoryDelta(categoria, DeltaConst.Operation.UPDATE);
             
             em.flush();
+            
+            return noContent();
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.toString()).build();
+            return badRequest(e);
         }
-
-        return Response.noContent().build();
     }
     
     /**
@@ -306,36 +288,33 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/categories/{idcat: \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteCourseCategory(@PathParam("id") int id, @PathParam("idcat") int idCat) {
-        Corso corso = em.find(Corso.class, id);
-
-        if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        Categoria cat = em.createQuery("SELECT c from Categoria c WHERE c.id = :idCat AND c.idCorso = :idCorso", Categoria.class)
-                .setParameter("idCat", idCat)
-                .setParameter("idCorso", corso)
-                .getSingleResult();
-
-        int count = em.createQuery("SELECT COUNT(d.id) FROM Documento d WHERE d.idCorso = :idC", Integer.class).setParameter("idC", corso).getSingleResult();
-
-        if (count > 0) {
-            return Response.status(Response.Status.CONFLICT).entity("Corso con elementi collegati. Eliminare prima tali collegamenti e riprovare.").build();
-        }
-
         try {
+            Categoria cat = em.createQuery("SELECT cat from Categoria cat JOIN cat.idCorso c WHERE cat.id = :idCat AND c.id = :idCorso", Categoria.class)
+                    .setParameter("idCat", idCat)
+                    .setParameter("idCorso", id)
+                    .getSingleResult();
+
+            int count = em.createQuery("SELECT COUNT(d.id) FROM Documento d JOIN d.idCorso c WHERE c.id = :idCorso", Integer.class)
+                    .setParameter("idCorso", id)
+                    .getSingleResult();
+            if (count > 0) {
+                return conflict("Corso con elementi collegati. Eliminare prima tali collegamenti e riprovare.");
+            }
+
             em.remove(cat);
             
             ds.enqueueCategoryDelta(cat, DeltaConst.Operation.REMOVE);
             
             em.flush();
-            
-        } catch (Exception e) {
+            return noContent();
+        } 
+        catch(NoResultException nre) {
+            return notFound();
+        } 
+        catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.CONFLICT).entity(e.toString()).build();
+            return conflict(e);
         }
-
-        return Response.noContent().build();
     }
     
     /*********************************************************
@@ -353,10 +332,7 @@ public class CorsiService extends BaseService {
     @GET
     @Path("{id: \\d+}/documents")
     public Response getCourseDocuments(@PathParam("id") int id, @Context UriInfo info) {
-        Corso c = em.find(Corso.class, id);
-        return (c != null)
-                ? Response.ok(resourcesToURI(info, em.createQuery("SELECT d.id from Documento d WHERE d.idCorso = :id").setParameter("id", c).getResultList())).build()
-                : Response.status(Response.Status.NOT_FOUND).build();
+        return ok(resourcesToURI(info, em.createQuery("SELECT d.id FROM Documento d JOIN d.idCorso c WHERE c.id = :id").setParameter("id", id).getResultList()));
     }
 
     /**
@@ -368,22 +344,15 @@ public class CorsiService extends BaseService {
     @GET
     @Path("{id: \\d+}/documents/{iddoc: \\d+}")
     public Response getCourseDocumentDetail(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        try {
+            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
+                    .setParameter("idCorso", idCorso)
+                    .setParameter("idDoc", idDoc)
+                    .getSingleResult());
         }
-
-        Documento doc = em.find(Documento.class, idDoc);
-        if (doc == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        catch(NoResultException nre) {  
+            return notFound();
         }
-
-        List<Documento> lDoc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc")
-                .setParameter("idCorso", corso)
-                .setParameter("idDoc", idDoc)
-                .getResultList();
-
-        return lDoc.isEmpty() ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(lDoc.get(0)).build();
     }
     
     /**
@@ -396,22 +365,17 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/documents/{iddoc: \\d+}/file")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getCourseDocumentFile(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        Documento doc = em.find(Documento.class, idDoc);
-        if (doc == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        doc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc", Documento.class)
-                .setParameter("idCorso", corso)
+        try {
+            Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc", Documento.class)
+                .setParameter("idCorso", idCorso)
                 .setParameter("idDoc", idDoc)
                 .getSingleResult();
-
-        return (doc==null) ? Response.status(Response.Status.NOT_FOUND).build() : downloadFile(doc.getNomefile(), doc.getContenuto());
+            
+            return downloadFile(doc.getNomefile(), doc.getContenuto());
+        }
+        catch(NoResultException nre) {
+            return notFound();
+        }
     }
         
     /**
@@ -424,24 +388,20 @@ public class CorsiService extends BaseService {
     @GET
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents")
     public Response getCouseCategoryDocuments(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @Context UriInfo info) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        Categoria cat = em.createQuery("SELECT c FROM Categoria c WHERE c.id = :idCat AND c.idCorso = :idCorso", Categoria.class)
-                            .setParameter("idCat", idCat)
-                            .setParameter("idCorso", corso)
+        try {
+            em.createQuery("SELECT cat FROM Categoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Categoria.class)
+                            .setParameter("idcat", idCat)
+                            .setParameter("idcorso", idCorso)
                             .getSingleResult();
-        if (cat == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
         }
-               
-        List<Integer> lDoc = em.createQuery("SELECT d.id FROM Documento d WHERE d.idCategoria = :idcat")
-                                .setParameter("idcat", cat)
-                                .getResultList();
+        catch(NoResultException nre) {
+            return notFound();
+        }
         
-        return (lDoc.isEmpty()) ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(resourcesToURI(info, lDoc)).build();
+        return ok(resourcesToURI(info, em.createQuery("SELECT d.id FROM Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Integer.class)
+                        .setParameter("idcorso", idCorso)
+                        .setParameter("idcat", idCat)
+                        .getResultList()));
     }
     
     /**
@@ -454,29 +414,15 @@ public class CorsiService extends BaseService {
     @GET
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}")
     public Response getCouseCategoryDocumentDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        Categoria cat = em.createQuery("SELECT c FROM Categoria c WHERE c.id = :idCat AND c.idCorso = :idCorso", Categoria.class)
-                            .setParameter("idCat", idCat)
-                            .setParameter("idCorso", corso)
-                            .getSingleResult();
-        if (cat == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
-        }
-           
         try {
-            Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCategoria = :idCat AND d.id = :idDoc", Documento.class)
-                    .setParameter("idCat", cat)
-                    .setParameter("idDoc", idDoc)
-                    .getSingleResult();
-            
-            return Response.ok(doc).build();
+            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
+                    .setParameter("idcat", idCat)
+                    .setParameter("idcorso", idCorso)
+                    .setParameter("iddoc", idDoc)
+                    .getSingleResult());
         }
         catch(NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
     }
     
@@ -491,25 +437,18 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}/file")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getCouseCategoryDocumentFile(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        try {
+            Documento doc = em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
+                    .setParameter("idcat", idCat)
+                    .setParameter("idcorso", idCorso)
+                    .setParameter("iddoc", idDoc)
+                    .getSingleResult();
+            
+            return downloadFile(doc.getNomefile(), doc.getContenuto());
         }
-
-        Categoria cat = em.createQuery("SELECT c FROM Categoria c WHERE c.id = :idCat AND c.idCorso = :idCorso", Categoria.class)
-                            .setParameter("idCat", idCat)
-                            .setParameter("idCorso", corso)
-                            .getSingleResult();
-        if (cat == null) {
-            Response.status(Response.Status.NOT_FOUND).build();
+        catch(NoResultException nre) {
+            return notFound();
         }
-               
-        Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCategoria = :idCat AND d.id = :idDoc", Documento.class)
-                .setParameter("idCat", cat)
-                .setParameter("idDoc", idDoc)
-                .getSingleResult();
-
-        return (doc==null) ? Response.status(Response.Status.NOT_FOUND).build() : downloadFile(doc.getNomefile(), doc.getContenuto());
     }
     
     /**
@@ -525,30 +464,27 @@ public class CorsiService extends BaseService {
     public Response addNewCourseDocument(@PathParam("id") int id, @Context HttpServletRequest req, @Context UriInfo info) {
         Corso corso = em.find(Corso.class, id);
         if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
        
         try {
             Part documentData = req.getPart("document");
             if (documentData == null) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                return badRequest();
             }                
 
-            Checksum cs = new Checksum();
             final byte[] bytes;
             try (InputStream in = documentData.getInputStream()) {
                 bytes = new byte[(int)documentData.getSize()];
                 in.read(bytes);
             }
-            cs.update(bytes);
-
             documentData.delete();
-                
+                  
             Documento doc = new Documento();
             doc.setIdCorso(corso);
             doc.setNomefile(Paths.get(documentData.getSubmittedFileName()).getFileName().toString());
             doc.setDimensione(bytes.length);
-            doc.setChecksum(cs.getCheckum());
+            doc.setChecksum(new Checksum(bytes).getCheckum());
             doc.setContenuto(bytes);
             doc.setUidRisorsa(ms.generateUID());
             
@@ -558,11 +494,11 @@ public class CorsiService extends BaseService {
                         
             em.flush();
             
-            return Response.ok(resourceToURI(info, doc.getId())).build();
+            return ok(resourceToURI(info, doc.getId()));
         }
         catch(IOException | ServletException e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(e.toString()).build();
+            return unprocessableEntity(e);
         }                                
     }
     
@@ -578,40 +514,29 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addNewCourseCategoryDocument(@PathParam("id") int id, @PathParam("id") int idCat, @Context HttpServletRequest req, @Context UriInfo info) {
-        Corso corso = em.find(Corso.class, id);
-        if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-                
-        Categoria cat = em.createQuery("SELECT c FROM Categoria c WHERE c.id = :idCat AND c.idCorso = :idCorso", Categoria.class)
-                                .setParameter("idCat", idCat)
-                                .setParameter("idCorso", corso)
-                                .getSingleResult();
-        if (cat == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        ;
         try {
+            Categoria cat = em.createQuery("SELECT cat FROM Categoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso", Categoria.class)
+                                    .setParameter("idcat", idCat)
+                                    .setParameter("idcorso", id)
+                                    .getSingleResult();
+        
             Part documentData = req.getPart("document");
             if (documentData == null) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                return badRequest();
             }                
 
-            Checksum cs = new Checksum();
             final byte[] bytes;
             try (InputStream in = documentData.getInputStream()) {
                 bytes = new byte[(int)documentData.getSize()];
                 in.read(bytes);
             }
-            cs.update(bytes);
-
             documentData.delete();
                 
             Documento doc = new Documento();
             doc.setIdCategoria(cat);
             doc.setNomefile(Paths.get(documentData.getSubmittedFileName()).getFileName().toString());
             doc.setDimensione(bytes.length);
-            doc.setChecksum(cs.getCheckum());
+            doc.setChecksum(new Checksum(bytes).getCheckum());
             doc.setContenuto(bytes);
             doc.setUidRisorsa(ms.generateUID());
             
@@ -621,11 +546,11 @@ public class CorsiService extends BaseService {
             
             em.flush();
             
-            return Response.ok(resourceToURI(info, doc.getId())).build();
+            return ok(resourceToURI(info, doc.getId()));
         }
         catch(IOException | ServletException e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(e.toString()).build();
+            return unprocessableEntity(e);
         }                                
     }    
     
@@ -633,30 +558,30 @@ public class CorsiService extends BaseService {
      * 
      * @param id
      * @param idCat
-     * @param iddoc
+     * @param idDoc
      * @return 
      */
     @DELETE
     @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}/")
-    public Response deleteCourseCategoryDocument(@PathParam("id") int id, @PathParam("idcat") int idCat, @PathParam("iddoc") int iddoc) {
-        Documento doc = em.find(Documento.class, iddoc);
-        
-        // well...must exists and must belong to course/category specified
-        if(doc==null) return Response.status(Response.Status.NOT_FOUND).build();
-        if(doc.getIdCategoria().getId()!=idCat && doc.getIdCategoria().getIdCorso().getId()!=id) return Response.status(Response.Status.NOT_FOUND).build();
-        
+    public Response deleteCourseCategoryDocument(@PathParam("id") int id, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
         try {
+            Documento doc = em.createQuery("SELECT d FROM Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE d.id = :iddoc AND cat.id = :idcat AND c.id = :idcorso", Documento.class)
+                    .setParameter("iddoc", idDoc)
+                    .setParameter("idcat", idCat)
+                    .setParameter("idcorso", id)
+                    .getSingleResult();
+        
             em.remove(doc);
             
             ds.enqueueDocumentDelta(doc, DeltaConst.Operation.REMOVE);
             
             em.flush();
             
-            return Response.status(Response.Status.NO_CONTENT).build();
+            return noContent();
         }
         catch(Exception e) {
             ctx.setRollbackOnly();
-            throw new EJBException("Canno delete document "+doc, e);
+            return unprocessableEntity(e);
         }
     }
 }

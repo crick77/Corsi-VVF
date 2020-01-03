@@ -76,10 +76,10 @@ public class AuthService extends BaseService {
         if(adService.checkUser(ai.getUsername(), ai.getPassword())) {
             String token = msb.createToken("admin_id", MiscServices.NO_EXPIRE);
             ss.add(token);
-            return Response.ok(token).build();
+            return ok(token);
         }
         else {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return unauthorized();
         }
     }
     
@@ -109,9 +109,9 @@ public class AuthService extends BaseService {
             
             ss.invalidate(token);
             
-            return Response.ok().build();
+            return ok();
         }
         
-        return Response.notModified().build();
+        return notModified();
     }
 }

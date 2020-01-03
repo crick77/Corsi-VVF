@@ -5,7 +5,6 @@
  */
 package it.dipvvf.abr.app.corsivvf.rest;
 
-import it.dipvvf.abr.app.corsivvf.bean.Counter;
 import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.model.Categoria;
@@ -24,6 +23,7 @@ import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -60,8 +60,7 @@ public class DispositiviService extends BaseService {
      */
     @GET
     public Response getDevices() {
-        List<Dispositivo> lDisp = em.createQuery("SELECT d.id FROM Dispositivo d").getResultList();
-        return lDisp.isEmpty() ? Response.noContent().build() : Response.ok(lDisp).build();
+        return ok(em.createQuery("SELECT d.id FROM Dispositivo d").getResultList());
     }
 
     /**
@@ -73,7 +72,7 @@ public class DispositiviService extends BaseService {
     @Path("{id: \\d+}")
     public Response getDeviceDetail(@PathParam("id") int id) {
         Dispositivo disp = em.find(Dispositivo.class, id);
-        return (disp == null) ? Response.status(Response.Status.NOT_FOUND).build() : Response.ok(disp).build();
+        return (disp == null) ? notFound() : ok(disp);
     }
 
     /**
@@ -89,10 +88,11 @@ public class DispositiviService extends BaseService {
         try {
             em.persist(d);
             em.flush();
-            return Response.status(Response.Status.NO_CONTENT).build();
+            
+            return noContent();
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.CONFLICT).entity(e).build();
+            return conflict(e);
         }
     }
 
@@ -104,43 +104,29 @@ public class DispositiviService extends BaseService {
     @GET
     @Path("{id: \\d+}/courses")
     public Response getDeviceCourses(@PathParam("id") int id) {
-        Dispositivo disp = em.find(Dispositivo.class, id);
-        if (disp == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        List<Integer> lInst = em.createQuery("SELECT i.id FROM Installazione i WHERE i.idDispositivo = :idDisp")
-                .setParameter("idDisp", disp)
-                .getResultList();
-
-        return (lInst.isEmpty()) ? Response.noContent().build() : Response.ok(lInst).build();
+        return ok(em.createQuery("SELECT i.id FROM Installazione i JOIN i.idDispositivo d WHERE d.id = :iddisp")
+                .setParameter("iddisp", id)
+                .getResultList());
     }
 
     /**
      * 
      * @param id
-     * @param idCorso
+     * @param idcorso
      * @return 
      */
     @GET
     @Path("{id: \\d+}/courses/{idcourse: \\d+}")
-    public Response getDettaglioDeviceCorsi(@PathParam("id") int id, @PathParam("idcourse") int idCorso) {
-        Dispositivo disp = em.find(Dispositivo.class, id);
-        if (disp == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+    public Response getDettaglioDeviceCorsi(@PathParam("id") int id, @PathParam("idcourse") int idcorso) {
+        try {
+            return ok(em.createQuery("SELECT i FROM Installazione i JOIN i.idDispositivo d JOIN i.idCorso c WHERE d.id = :id AND c.id = :idcorso", Installazione.class)
+                    .setParameter("id", id)
+                    .setParameter("idcorso", idcorso)
+                    .getSingleResult());
         }
-
-        Corso corso = em.find(Corso.class, idCorso);
-        if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        catch(NoResultException nre) {
+            return notFound();
         }
-
-        List<Installazione> lInst = em.createQuery("SELECT i FROM Installazione i WHERE i.idDispositivo = :id AND i.idCorso = :idCorso")
-                .setParameter("id", disp)
-                .setParameter("idCorso", corso)
-                .getResultList();
-
-        return (lInst.isEmpty()) ? Response.noContent().build() : Response.ok(lInst.get(0)).build();
     }
 
     /**
@@ -155,17 +141,17 @@ public class DispositiviService extends BaseService {
     public Response installDeviceCourse(@PathParam("id") int idDev, @PathParam("idcourse") int idCorso, @Context UriInfo info) {
         Dispositivo disp = em.find(Dispositivo.class, idDev);
         if (disp == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
 
         Corso corso = em.find(Corso.class, idCorso);
         if (corso == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
 
         try {
             Date dataSinc = new Date();
-            Counter order = new Counter();
+            int order = 0;
             
             Installazione inst = new Installazione();
             inst.setIdCorso(corso);
@@ -180,12 +166,11 @@ public class DispositiviService extends BaseService {
             em.persist(sinc);
             
             Delta d = new Delta();
-            
             d.setIdSincronizzazione(sinc);
             d.setRisorsa(corso.getTitolo());
             d.setOperazione(DeltaConst.Operation.ADD.toString());
             d.setTipologia(DeltaConst.ResourceType.COURSE.toString());
-            d.setOrdine(order.next());
+            d.setOrdine(order++);
             d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(-1);
             d.setUidRisorsa(corso.getUidRisorsa());
@@ -202,7 +187,7 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(categoria.getNome());
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
-                d.setOrdine(order.next());
+                d.setOrdine(order++);
                 d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(-1);
                 d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE.toString());
@@ -221,7 +206,7 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(documento.getNomefile());
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
-                d.setOrdine(order.next());
+                d.setOrdine(order++);
                 d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(documento.getDimensione());
                 d.setMd5(documento.getChecksum());
@@ -241,7 +226,7 @@ public class DispositiviService extends BaseService {
                 d.setRisorsa(documento.getNomefile());
                 d.setOperazione(DeltaConst.Operation.ADD.toString());
                 d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
-                d.setOrdine(order.next());
+                d.setOrdine(order++);
                 d.setStato(DeltaConst.Status.PENDING.toString());
                 d.setDimensione(documento.getDimensione());
                 d.setMd5(documento.getChecksum());
@@ -253,10 +238,10 @@ public class DispositiviService extends BaseService {
             
             em.flush();
 
-            return Response.status(Response.Status.CREATED).entity(resourceToURI(info, inst.getId())).build();
+            return created(resourceToURI(info, inst.getId()));
         } catch (Exception e) {
             ctx.setRollbackOnly();
-            return Response.status(Response.Status.CONFLICT).entity(e).build();
+            return conflict(e);
         }
     }
 
@@ -266,29 +251,32 @@ public class DispositiviService extends BaseService {
      * @return 
      */
     @POST
-    public Response registerDevice(@HeaderParam("device-id") String deviceId) {
+    public Response registerDevice(@HeaderParam("Device-Id") String deviceId) {
         if (deviceId == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return badRequest();
         }
 
         // Recupera il device
-        Dispositivo d = em.createQuery("SELECT d FROM Dispositivo d WHERE d.deviceid = :devid", Dispositivo.class)
+        
+        Dispositivo d;
+        try {
+            d = em.createQuery("SELECT d FROM Dispositivo d WHERE d.deviceid = :devid", Dispositivo.class)
                 .setParameter("devid", deviceId)
                 .getSingleResult();
-
-        // Non esiste? Restituisce lo stato al client
-        if (d == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        catch(NoResultException nre) {
+            // Non esiste? Restituisce lo stato al client
+            return notFound();
         }
 
         // Token già generato, restituisce lo stato
         if (d.getToken() != null) {
-            return Response.notModified().build();
+            return notModified();
         }
 
         // Non abilitato? Segnala al client la mancanza di autorizzazione
         if (!d.getAbilitato()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return unauthorized();
         }
 
         // Genera un token univoco abbinato al deviceid senza scadenza
@@ -296,6 +284,6 @@ public class DispositiviService extends BaseService {
         String devToken = ms.createToken(deviceId, MiscServices.NO_EXPIRE);
         d.setToken(devToken);
 
-        return Response.ok(devToken).build();
+        return ok(devToken);
     }
 }

@@ -110,14 +110,4 @@ public class MiscServices {
             return null;
         }
     } 
-    
-    /**
-     * to be removed - servlet upload
-     *
-     * @param doc
-     */
-    public void saveDocument(Documento doc) {
-        em.persist(doc);
-        em.flush();
-    }
 }

@@ -5,6 +5,7 @@
  */
 package it.dipvvf.abr.app.corsivvf.ejb;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,6 +68,107 @@ public abstract class BaseService {
         ArrayList<Object> resources = new ArrayList<>();
         resources.add(resource);
         return resourcesToURI(uriInfo, resources).get(0);
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response ok() {
+        return Response.ok().build();
+    }
+    
+    /**
+     * 
+     * @param entity
+     * @return 
+     */
+    public Response ok(Object entity) {
+        return Response.ok(entity).build();
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response badRequest() {
+        return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+    
+    /**
+     * 
+     * @param e
+     * @return 
+     */
+    public Response badRequest(Object e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response notFound() {
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response unauthorized() {
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response noContent() {
+        return Response.noContent().build();
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public Response notModified() {
+        return Response.notModified().build();
+    }
+   
+    /**
+     * 
+     * @return 
+     */
+    public Response conflict() {
+        return Response.status(Response.Status.CONFLICT).build();
+    }
+    
+    /**
+     * 
+     * @param entity
+     * @return 
+     */
+    public Response conflict(Object entity) {
+        return Response.status(Response.Status.CONFLICT).entity(entity).build();
+    }
+    
+    /**
+     * 
+     * @param location
+     * @return 
+     */
+    public Response created(Object location) {
+        return Response.status(Response.Status.CREATED).entity(location).build();
+    }
+    
+    /**
+     * 
+     * @param entity
+     * @return 
+     */
+    public Response unprocessableEntity(Object entity) {
+        return Response.status(422).entity(entity).build();
     }
     
     /**

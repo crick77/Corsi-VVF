@@ -6,7 +6,6 @@
 package it.dipvvf.abr.app.corsivvf.rest;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import it.dipvvf.abr.app.corsivvf.bean.Counter;
 import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.model.Categoria;
@@ -160,6 +159,7 @@ public class DeltaService extends BaseService {
                 .setParameter("corso", cat.getIdCorso())
                 .getResultList();
 
+        int counter = 0;
         Date syncDate = new Date();
         for (Installazione inst : lInst) {
             // inserisce una nuova sincronizzazione
@@ -174,7 +174,7 @@ public class DeltaService extends BaseService {
             d.setIdSincronizzazione(sinc);
             d.setOperazione(operation.toString());
             d.setTipologia(DeltaConst.ResourceType.CATEGORY.toString());
-            d.setOrdine(new Counter().next());
+            d.setOrdine(counter++);
             d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(-1);
             d.setTipoRisorsaPadre(DeltaConst.ResourceType.COURSE.toString());
@@ -206,6 +206,7 @@ public class DeltaService extends BaseService {
                 .setParameter("id", id)
                 .getResultList();
 
+        int counter = 0;
         Date dataSync = new Date();
         for (Installazione inst : lInst) {
             Sincronizzazione sinc = new Sincronizzazione();
@@ -219,7 +220,7 @@ public class DeltaService extends BaseService {
             d.setIdSincronizzazione(sinc);
             d.setOperazione(operation.toString());
             d.setTipologia(DeltaConst.ResourceType.DOCUMENT.toString());
-            d.setOrdine(new Counter().next());
+            d.setOrdine(counter++);
             d.setStato(DeltaConst.Status.PENDING.toString());
             d.setDimensione(doc.getDimensione());
             d.setMd5(doc.getChecksum());

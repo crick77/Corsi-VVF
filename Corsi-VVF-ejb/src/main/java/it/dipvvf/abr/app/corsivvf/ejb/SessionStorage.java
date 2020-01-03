@@ -52,14 +52,22 @@ public class SessionStorage {
     /**
      * 
      * @param token 
+     * @return  
      */
-    public void add(String token) {
+    public boolean add(String token) {
         if(token!=null) {
-            DecodedJWT jwt = ms.decodeToken(token);
-            if(jwt!=null) {
-                session.put(token, jwt);
+            try {
+                DecodedJWT jwt = ms.decodeToken(token);
+                if(jwt!=null) {
+                    session.put(token, jwt);
+                    return true;
+                }
+            }
+            catch(Exception e) {
             }
         }
+        
+        return false;
     }
     
     /**

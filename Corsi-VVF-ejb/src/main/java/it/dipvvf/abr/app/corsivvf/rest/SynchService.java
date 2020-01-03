@@ -67,11 +67,9 @@ public class SynchService extends BaseService {
             }
         }
         
-        List<Integer> lSinc = em.createQuery("SELECT s.id FROM Sincronizzazione s WHERE s.stato = :status ORDER BY s.dataora ASC", Integer.class)
+        return ok(resourcesToURI(uriInfo, em.createQuery("SELECT s.id FROM Sincronizzazione s WHERE s.stato = :status ORDER BY s.dataora ASC", Integer.class)
                 .setParameter("status", status)
-                .getResultList();
-
-        return Response.ok(resourcesToURI(uriInfo, lSinc)).build();
+                .getResultList()));
     }
     
     /**
@@ -105,12 +103,10 @@ public class SynchService extends BaseService {
             }
         }
 
-        List<Integer> lSinc = em.createQuery("SELECT s.id FROM Sincronizzazione s JOIN Dispositivo d WHERE d.id = :disp AND s.stato = :status ORDER BY s.dataora ASC", Integer.class)
+        return ok(resourcesToURI(uriInfo, em.createQuery("SELECT s.id FROM Sincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo d WHERE d.id = :disp AND s.stato = :status ORDER BY s.dataora ASC", Integer.class)
                 .setParameter("disp", idDev)
                 .setParameter("status", status)
-                .getResultList();
-
-        return Response.ok(resourcesToURI(uriInfo, lSinc)).build();
+                .getResultList()));
     }
 
     /**
@@ -124,15 +120,13 @@ public class SynchService extends BaseService {
     @Path("{iddev: \\d+}/{idsync: \\d+}")
     public Response getDeviceSynchDetail(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync) {
         try {
-            Sincronizzazione s = em.createQuery("SELECT s FROM Sincronizzazione s JOIN Dispositivo d WHERE d.id = :idDisp AND s.id = :idSync", Sincronizzazione.class)
+            return ok(em.createQuery("SELECT s FROM Sincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo d WHERE d.id = :idDisp AND s.id = :idSync", Sincronizzazione.class)
                     .setParameter("idDisp", idDev)
                     .setParameter("idSync", idSync)
-                    .getSingleResult();
-
-            return Response.ok(s).build();
+                    .getSingleResult());
         }
         catch(NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
     }
 
@@ -148,12 +142,10 @@ public class SynchService extends BaseService {
     @GET
     @Path("{iddev: \\d+}/{idsync: \\d+}/deltas")
     public Response getDeviceSynchDelta(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync, @Context UriInfo uriInfo) {
-        List<Integer> lDelta = em.createQuery("SELECT d.id FROM Delta d JOIN Sincronizzazione s JOIN Dispositivo d WHERE d.id = :iddev AND s.id = :idsync", Integer.class)
+        return ok(resourcesToURI(uriInfo, em.createQuery("SELECT d.id FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo dev WHERE dev.id = :iddev AND s.id = :idsync", Integer.class)
                 .setParameter("iddev", idDev)
                 .setParameter("idsync", idSync)
-                .getResultList();
-        
-        return Response.ok(resourcesToURI(uriInfo, lDelta)).build();
+                .getResultList()));
     }
    
     /**
@@ -169,16 +161,14 @@ public class SynchService extends BaseService {
     @Path("{iddev: \\d+}/{idsync: \\d+}/deltas/{iddelta: \\d+}")
     public Response getDeviceSynchDeltaDetail(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync, @PathParam("iddelta") int idDelta) {
         try {
-            Delta d = em.createQuery("SELECT d FROM Delta d JOIN Sincronizzazione s JOIN Dispositivo disp WHERE disp.id = :iddev AND s.id = :idsync AND d.id = :iddelta", Delta.class)
+            return ok(em.createQuery("SELECT d FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo disp WHERE disp.id = :iddev AND s.id = :idsync AND d.id = :iddelta", Delta.class)
                     .setParameter("iddev", idDev)
                     .setParameter("idsync", idSync)
                     .setParameter("iddelta", idDelta)
-                    .getSingleResult();
-            
-            return Response.ok(d).build();
+                    .getSingleResult());
         }
         catch(NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
     }
 }

@@ -14,7 +14,7 @@ import javax.xml.bind.DatatypeConverter;
  *
  * @author riccardo.iovenitti
  */
-public class Checksum {
+public final class Checksum {
     private MessageDigest md = null;
     private CRC32 crc = null;
     
@@ -28,6 +28,12 @@ public class Checksum {
             System.err.println("MD5 is not available. Switching to CRC32.");
             crc = new CRC32();
         }
+    }
+    
+    public Checksum(byte[] data) {
+        this();
+        
+        update(data);
     }
     
     /**
