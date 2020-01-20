@@ -9,7 +9,6 @@ import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.model.Delta;
 import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Sincronizzazione;
-import java.util.List;
 import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
 import javax.persistence.EntityManager;

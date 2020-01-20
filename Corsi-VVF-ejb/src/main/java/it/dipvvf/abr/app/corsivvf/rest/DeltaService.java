@@ -5,7 +5,6 @@
  */
 package it.dipvvf.abr.app.corsivvf.rest;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.model.Categoria;

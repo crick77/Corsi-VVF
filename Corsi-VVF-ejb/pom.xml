@@ -139,24 +139,6 @@
                         <id>wsimport-generate-ActiveDirectoryService</id>
                         <phase>generate-sources</phase>
                     </execution>
-                    <execution>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                        <configuration>
-                            <wsdlFiles>
-                                <wsdlFile>localhost_8080/ActiveDirectoryServiceService/ActiveDirectoryService.wsdl</wsdlFile>
-                            </wsdlFiles>
-                            <packageName>it.dipvvf.abr.app.corsivvf.wsref</packageName>
-                            <vmArgs>
-                                <vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
-                            </vmArgs>
-                            <wsdlLocation>http://localhost:8080/ActiveDirectoryServiceService/ActiveDirectoryService?wsdl</wsdlLocation>
-                            <staleFile>${project.build.directory}/jaxws/stale/ActiveDirectoryService_1.stale</staleFile>
-                        </configuration>
-                        <id>wsimport-generate-ActiveDirectoryService_1</id>
-                        <phase>generate-sources</phase>
-                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>

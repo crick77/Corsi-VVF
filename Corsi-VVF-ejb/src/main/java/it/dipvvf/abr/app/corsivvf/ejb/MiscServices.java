@@ -13,7 +13,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.dipvvf.abr.app.corsivvf.model.Documento;
 import java.util.Date;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
