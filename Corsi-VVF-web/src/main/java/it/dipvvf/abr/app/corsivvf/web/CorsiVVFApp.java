@@ -5,14 +5,12 @@
  */
 package it.dipvvf.abr.app.corsivvf.web;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 /**
  *
  * @author riccardo.iovenitti
  */
-@ApplicationPath("api")
 public class CorsiVVFApp extends Application {
     public CorsiVVFApp() {
         System.out.println("Application ["+this.getClass().getSimpleName()+"] initialized.");

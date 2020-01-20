@@ -7,7 +7,6 @@
     <servlet>
         <servlet-name>it.dipvvf.abr.app.corsivvf.web.CorsiVVFApp</servlet-name>
         <multipart-config>
-            <location>c:/temp</location>
             <max-file-size>10485760</max-file-size>
             <max-request-size>31457280</max-request-size>
             <file-size-threshold>0</file-size-threshold>
@@ -15,7 +14,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>it.dipvvf.abr.app.corsivvf.web.CorsiVVFApp</servlet-name>
-        <url-pattern>/*</url-pattern>            
+        <url-pattern>/api/*</url-pattern>            
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
