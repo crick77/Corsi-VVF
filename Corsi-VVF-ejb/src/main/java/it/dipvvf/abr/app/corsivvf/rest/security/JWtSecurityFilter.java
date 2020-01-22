@@ -7,6 +7,7 @@ package it.dipvvf.abr.app.corsivvf.rest.security;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
+import it.dipvvf.abr.app.corsivvf.ejb.SessionStorage;
 import java.io.IOException;
 import javax.annotation.Priority;
 import javax.ejb.Stateless;
@@ -30,6 +31,8 @@ public class JWtSecurityFilter implements ContainerRequestFilter {
     private final static int TOKEN_START = "Bearer".length();
     @Inject
     MiscServices msb;    
+    @Inject
+    SessionStorage ss;
     
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -41,14 +44,20 @@ public class JWtSecurityFilter implements ContainerRequestFilter {
             DecodedJWT jwt = msb.decodeToken(token);            
             if(jwt!=null) {
                 System.out.printf("Token decodificato: %s", jwt.getIssuer());
-                return;
+                if(ss.isValid(token)) {
+                    System.out.println("Il token risulta valido e in sessione.");
+                    return;
+                }
+                else {
+                    System.out.println("ATTENZIONE: Il token non è più in sessione.");
+                }
             }
             else {
                 System.out.printf("Impossibile decodificare il token [%s]", token);
             }
         }
         
-        System.out.println("Autorizzazione non presente. Restituzione 401.");
+        System.out.println("Autorizzazione non presente/valida. Restituzione 401.");
         requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
     }
 }
