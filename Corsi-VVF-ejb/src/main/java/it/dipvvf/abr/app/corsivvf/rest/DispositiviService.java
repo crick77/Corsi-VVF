@@ -15,6 +15,7 @@ import it.dipvvf.abr.app.corsivvf.model.Dispositivo;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
 import it.dipvvf.abr.app.corsivvf.model.Installazione;
 import it.dipvvf.abr.app.corsivvf.model.Sincronizzazione;
+import it.dipvvf.abr.app.corsivvf.rest.security.JWTSecurityCheck;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
@@ -46,6 +47,7 @@ import javax.ws.rs.core.UriInfo;
 @LocalBean
 @Path("devices")
 @Produces(MediaType.APPLICATION_JSON)
+@JWTSecurityCheck
 public class DispositiviService extends BaseService {
     @Inject
     MiscServices ms;

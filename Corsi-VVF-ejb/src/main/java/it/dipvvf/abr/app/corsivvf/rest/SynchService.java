@@ -9,6 +9,7 @@ import it.dipvvf.abr.app.corsivvf.ejb.BaseService;
 import it.dipvvf.abr.app.corsivvf.model.Delta;
 import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Sincronizzazione;
+import it.dipvvf.abr.app.corsivvf.rest.security.JWTSecurityCheck;
 import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
 import javax.persistence.EntityManager;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.UriInfo;
 @LocalBean
 @Path("synchronizations")
 @Produces(MediaType.APPLICATION_JSON)
+@JWTSecurityCheck
 public class SynchService extends BaseService {
     @PersistenceContext
     EntityManager em;

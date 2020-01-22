@@ -12,6 +12,7 @@ import it.dipvvf.abr.app.corsivvf.model.Categoria;
 import it.dipvvf.abr.app.corsivvf.model.Corso;
 import it.dipvvf.abr.app.corsivvf.model.DeltaConst;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
+import it.dipvvf.abr.app.corsivvf.rest.security.JWTSecurityCheck;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -47,6 +48,7 @@ import javax.ws.rs.core.UriInfo;
 @LocalBean
 @Path("courses")
 @Produces(MediaType.APPLICATION_JSON)
+@JWTSecurityCheck
 public class CorsiService extends BaseService {
     @PersistenceContext
     EntityManager em;

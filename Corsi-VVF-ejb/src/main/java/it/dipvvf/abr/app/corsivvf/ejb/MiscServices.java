@@ -20,8 +20,6 @@ import javax.ejb.Stateless;
 import javax.ejb.LocalBean;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -30,9 +28,7 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @LocalBean
 public class MiscServices {
-    @PersistenceContext
-    EntityManager em;
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
     private static final String SECRET = "trytodecryptthisbastard!!";
     private static final String ISSUER = "CorsiVVF.dipvvf.it";
     public static final long NO_EXPIRE = -1;
@@ -50,7 +46,7 @@ public class MiscServices {
      */
     public String createToken(String id, long expiration) {
         JWTCreator.Builder token = JWT.create().withSubject(id).withIssuer(ISSUER);
-        if (expiration <= NO_EXPIRE) {
+        if (expiration>NO_EXPIRE) {            
             token = token.withExpiresAt(new Date(System.currentTimeMillis() + expiration));
         }
         return token.sign(Algorithm.HMAC512(SECRET.getBytes()));

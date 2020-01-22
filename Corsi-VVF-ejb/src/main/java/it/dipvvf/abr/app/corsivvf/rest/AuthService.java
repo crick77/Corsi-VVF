@@ -11,6 +11,8 @@ import it.dipvvf.abr.app.corsivvf.ejb.MiscServices;
 import it.dipvvf.abr.app.corsivvf.ejb.SessionStorage;
 import it.dipvvf.abr.app.corsivvf.wsref.ActiveDirectoryService;
 import it.dipvvf.abr.app.corsivvf.wsref.ActiveDirectoryServiceService;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
 import javax.ejb.EJBException;
@@ -74,15 +76,19 @@ public class AuthService extends BaseService {
     @Consumes(MediaType.APPLICATION_JSON)    
     public Response loginJson(AccessInfo ai) {            
         if(adService.checkUser(ai.getUsername(), ai.getPassword())) {
-            String token = msb.createToken("admin_id", MiscServices.NO_EXPIRE);
-            if(ss.add(token))
-                return ok(token);
-            else
-                return error("Impossibile utilizzare lo storage di sessione.");
+            List<String> groups = adService.getUserGroups(ai.getUsername());
+            groups = (groups!=null) ? groups : new ArrayList<>(0);
+            System.out.printf("Gruppi dell'utente %s: %s", ai.getUsername(), groups);
+            if(groups.contains("GCorsi")) {
+                String token = msb.createToken("admin_id", MiscServices.NO_EXPIRE);
+                if(ss.add(token))
+                    return ok(token);
+                else
+                    return error("Impossibile utilizzare lo storage di sessione.");
+            }
         }
-        else {
-            return unauthorized();
-        }
+        
+        return unauthorized();
     }
     
     /**
