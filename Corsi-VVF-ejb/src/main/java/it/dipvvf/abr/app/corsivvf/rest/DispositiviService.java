@@ -65,6 +65,48 @@ public class DispositiviService extends BaseService {
         return ok(em.createQuery("SELECT d.id FROM Dispositivo d").getResultList());
     }
 
+     /**
+     * 
+     * @param deviceId
+     * @return 
+     */
+    @POST
+    public Response registerDevice(@HeaderParam("Device-Id") String deviceId) {
+        if (deviceId == null) {
+            return badRequest();
+        }
+
+        // Recupera il device
+        
+        Dispositivo d;
+        try {
+            d = em.createQuery("SELECT d FROM Dispositivo d WHERE d.deviceid = :devid", Dispositivo.class)
+                .setParameter("devid", deviceId)
+                .getSingleResult();
+        }
+        catch(NoResultException nre) {
+            // Non esiste? Restituisce lo stato al client
+            return notFound();
+        }
+
+        // Token già generato, restituisce lo stato
+        if (d.getToken() != null) {
+            return notModified();
+        }
+
+        // Non abilitato? Segnala al client la mancanza di autorizzazione
+        if (!d.getAbilitato()) {
+            return unauthorized();
+        }
+
+        // Genera un token univoco abbinato al deviceid senza scadenza
+        // e aggiorna archivio
+        String devToken = ms.createToken(deviceId, MiscServices.NO_EXPIRE);
+        d.setToken(devToken);
+
+        return ok(devToken);
+    }
+    
     /**
      * 
      * @param id
@@ -133,15 +175,15 @@ public class DispositiviService extends BaseService {
 
     /**
      * 
-     * @param idDev
+     * @param id
      * @param idCorso
      * @param info
      * @return 
      */
     @POST
     @Path("{id: \\d+}/courses/{idcourse: \\d+}")
-    public Response installDeviceCourse(@PathParam("id") int idDev, @PathParam("idcourse") int idCorso, @Context UriInfo info) {
-        Dispositivo disp = em.find(Dispositivo.class, idDev);
+    public Response installDeviceCourse(@PathParam("id") int id, @PathParam("idcourse") int idCorso, @Context UriInfo info) {
+        Dispositivo disp = em.find(Dispositivo.class, id);
         if (disp == null) {
             return notFound();
         }
@@ -245,47 +287,5 @@ public class DispositiviService extends BaseService {
             ctx.setRollbackOnly();
             return conflict(e);
         }
-    }
-
-    /**
-     * 
-     * @param deviceId
-     * @return 
-     */
-    @POST
-    public Response registerDevice(@HeaderParam("Device-Id") String deviceId) {
-        if (deviceId == null) {
-            return badRequest();
-        }
-
-        // Recupera il device
-        
-        Dispositivo d;
-        try {
-            d = em.createQuery("SELECT d FROM Dispositivo d WHERE d.deviceid = :devid", Dispositivo.class)
-                .setParameter("devid", deviceId)
-                .getSingleResult();
-        }
-        catch(NoResultException nre) {
-            // Non esiste? Restituisce lo stato al client
-            return notFound();
-        }
-
-        // Token già generato, restituisce lo stato
-        if (d.getToken() != null) {
-            return notModified();
-        }
-
-        // Non abilitato? Segnala al client la mancanza di autorizzazione
-        if (!d.getAbilitato()) {
-            return unauthorized();
-        }
-
-        // Genera un token univoco abbinato al deviceid senza scadenza
-        // e aggiorna archivio
-        String devToken = ms.createToken(deviceId, MiscServices.NO_EXPIRE);
-        d.setToken(devToken);
-
-        return ok(devToken);
     }
 }

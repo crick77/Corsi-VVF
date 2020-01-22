@@ -43,7 +43,6 @@ import javax.ws.rs.core.UriInfo;
 @Path("deltas")
 @Produces(MediaType.APPLICATION_JSON)
 public class DeltaService extends BaseService {
-
     @PersistenceContext
     EntityManager em;
     @Inject

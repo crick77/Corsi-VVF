@@ -194,26 +194,6 @@ public class CorsiService extends BaseService {
 
     /**
      * 
-     * @param idCorso
-     * @param idCategoria
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/categories/{idcat: \\d+}")
-    public Response getCourseCategorieDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCategoria) {
-        try {
-            return ok(em.createQuery("SELECT cat from Categoria cat JOIN cat.idCorso c WHERE c.id = :idCorso AND cat.id = :idCategoria")
-                    .setParameter("idCorso", idCorso)
-                    .setParameter("idCategoria", idCategoria)
-                    .getSingleResult());
-        }
-        catch(NoResultException nre) {
-            return notFound();
-        }
-    }
-
-    /**
-     * 
      * @param id
      * @param cat
      * @param info
@@ -242,6 +222,26 @@ public class CorsiService extends BaseService {
         } catch (Exception e) {
             ctx.setRollbackOnly();
             return unprocessableEntity(e);
+        }
+    }
+    
+    /**
+     * 
+     * @param idCorso
+     * @param idCategoria
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/categories/{idcat: \\d+}")
+    public Response getCourseCategorieDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCategoria) {
+        try {
+            return ok(em.createQuery("SELECT cat from Categoria cat JOIN cat.idCorso c WHERE c.id = :idCorso AND cat.id = :idCategoria")
+                    .setParameter("idCorso", idCorso)
+                    .setParameter("idCategoria", idCategoria)
+                    .getSingleResult());
+        }
+        catch(NoResultException nre) {
+            return notFound();
         }
     }
     
@@ -336,122 +336,6 @@ public class CorsiService extends BaseService {
 
     /**
      * 
-     * @param idCorso
-     * @param idDoc
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/documents/{iddoc: \\d+}")
-    public Response getCourseDocumentDetail(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
-        try {
-            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
-                    .setParameter("idCorso", idCorso)
-                    .setParameter("idDoc", idDoc)
-                    .getSingleResult());
-        }
-        catch(NoResultException nre) {  
-            return notFound();
-        }
-    }
-    
-    /**
-     * 
-     * @param idCorso
-     * @param idDoc
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/documents/{iddoc: \\d+}/file")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getCourseDocumentFile(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
-        try {
-            Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc", Documento.class)
-                .setParameter("idCorso", idCorso)
-                .setParameter("idDoc", idDoc)
-                .getSingleResult();
-            
-            return downloadFile(doc.getNomefile(), doc.getContenuto());
-        }
-        catch(NoResultException nre) {
-            return notFound();
-        }
-    }
-        
-    /**
-     * 
-     * @param idCorso
-     * @param idCat
-     * @param info
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents")
-    public Response getCouseCategoryDocuments(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @Context UriInfo info) {
-        try {
-            em.createQuery("SELECT cat FROM Categoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Categoria.class)
-                            .setParameter("idcat", idCat)
-                            .setParameter("idcorso", idCorso)
-                            .getSingleResult();
-        }
-        catch(NoResultException nre) {
-            return notFound();
-        }
-        
-        return ok(resourcesToURI(info, em.createQuery("SELECT d.id FROM Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Integer.class)
-                        .setParameter("idcorso", idCorso)
-                        .setParameter("idcat", idCat)
-                        .getResultList()));
-    }
-    
-    /**
-     * 
-     * @param idCorso
-     * @param idCat
-     * @param idDoc
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}")
-    public Response getCouseCategoryDocumentDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
-        try {
-            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
-                    .setParameter("idcat", idCat)
-                    .setParameter("idcorso", idCorso)
-                    .setParameter("iddoc", idDoc)
-                    .getSingleResult());
-        }
-        catch(NoResultException nre) {
-            return notFound();
-        }
-    }
-    
-    /**
-     * 
-     * @param idCorso
-     * @param idCat
-     * @param idDoc
-     * @return 
-     */
-    @GET
-    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}/file")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getCouseCategoryDocumentFile(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
-        try {
-            Documento doc = em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
-                    .setParameter("idcat", idCat)
-                    .setParameter("idcorso", idCorso)
-                    .setParameter("iddoc", idDoc)
-                    .getSingleResult();
-            
-            return downloadFile(doc.getNomefile(), doc.getContenuto());
-        }
-        catch(NoResultException nre) {
-            return notFound();
-        }
-    }
-    
-    /**
-     * 
      * @param id
      * @param req
      * @param info
@@ -499,6 +383,95 @@ public class CorsiService extends BaseService {
             ctx.setRollbackOnly();
             return unprocessableEntity(e);
         }                                
+    }
+    
+    /**
+     * 
+     * @param idCorso
+     * @param idDoc
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/documents/{iddoc: \\d+}")
+    public Response getCourseDocumentDetail(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
+        try {
+            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
+                    .setParameter("idCorso", idCorso)
+                    .setParameter("idDoc", idDoc)
+                    .getSingleResult());
+        }
+        catch(NoResultException nre) {  
+            return notFound();
+        }
+    }
+    
+    /**
+     * 
+     * @param idCorso
+     * @param idDoc
+     * @return 
+     */
+    @DELETE
+    @Path("{id: \\d+}/documents/{iddoc: \\d+}")
+    public Response deleteCourseDocument(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
+        try {
+            return ok(em.createQuery("DELETE from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
+                    .setParameter("idCorso", idCorso)
+                    .setParameter("idDoc", idDoc)
+                    .getSingleResult());
+        }
+        catch(NoResultException nre) {  
+            return notFound();
+        }
+    }
+    
+    /**
+     * 
+     * @param idCorso
+     * @param idDoc
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/documents/{iddoc: \\d+}/stream")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getCourseDocumentFile(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
+        try {
+            Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc", Documento.class)
+                .setParameter("idCorso", idCorso)
+                .setParameter("idDoc", idDoc)
+                .getSingleResult();
+            
+            return downloadFile(doc.getNomefile(), doc.getContenuto());
+        }
+        catch(NoResultException nre) {
+            return notFound();
+        }
+    }
+        
+    /**
+     * 
+     * @param idCorso
+     * @param idCat
+     * @param info
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents")
+    public Response getCouseCategoryDocuments(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @Context UriInfo info) {
+        try {
+            em.createQuery("SELECT cat FROM Categoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Categoria.class)
+                            .setParameter("idcat", idCat)
+                            .setParameter("idcorso", idCorso)
+                            .getSingleResult();
+        }
+        catch(NoResultException nre) {
+            return notFound();
+        }
+        
+        return ok(resourcesToURI(info, em.createQuery("SELECT d.id FROM Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Integer.class)
+                        .setParameter("idcorso", idCorso)
+                        .setParameter("idcat", idCat)
+                        .getResultList()));
     }
     
     /**
@@ -555,6 +528,28 @@ public class CorsiService extends BaseService {
     
     /**
      * 
+     * @param idCorso
+     * @param idCat
+     * @param idDoc
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}")
+    public Response getCouseCategoryDocumentDetail(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
+        try {
+            return ok(em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
+                    .setParameter("idcat", idCat)
+                    .setParameter("idcorso", idCorso)
+                    .setParameter("iddoc", idDoc)
+                    .getSingleResult());
+        }
+        catch(NoResultException nre) {
+            return notFound();
+        }
+    }
+    
+     /**
+     * 
      * @param id
      * @param idCat
      * @param idDoc
@@ -583,4 +578,29 @@ public class CorsiService extends BaseService {
             return unprocessableEntity(e);
         }
     }
+    
+    /**
+     * 
+     * @param idCorso
+     * @param idCat
+     * @param idDoc
+     * @return 
+     */
+    @GET
+    @Path("{id: \\d+}/categories/{idcat: \\d+}/documents/{iddoc: \\d+}/stream")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getCouseCategoryDocumentFile(@PathParam("id") int idCorso, @PathParam("idcat") int idCat, @PathParam("iddoc") int idDoc) {
+        try {
+            Documento doc = em.createQuery("SELECT d from Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE cat.id = :idcat AND c.id = :idcorso AND d.id = :iddoc", Documento.class)
+                    .setParameter("idcat", idCat)
+                    .setParameter("idcorso", idCorso)
+                    .setParameter("iddoc", idDoc)
+                    .getSingleResult();
+            
+            return downloadFile(doc.getNomefile(), doc.getContenuto());
+        }
+        catch(NoResultException nre) {
+            return notFound();
+        }
+    }             
 }

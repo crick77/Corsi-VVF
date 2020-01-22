@@ -83,7 +83,7 @@ public class SynchService extends BaseService {
      * @return
      */
     @GET
-    @Path("{iddev: \\d+}")
+    @Path("/device/{iddev: \\d+}")
     public Response getDeviceSynchronizations(@PathParam("iddev") int idDev, @QueryParam("status") String status, @Context UriInfo uriInfo) {
         status = (status != null) ? status.trim().toUpperCase() : DeltaConst.Status.PENDING.toString();
         switch (status) {
@@ -113,13 +113,13 @@ public class SynchService extends BaseService {
     /**
      * Return detail about given synchronization for requested device id.
      * 
+     * @param idSync* 
      * @param idDev
-     * @param idSync
      * @return
      */
     @GET
-    @Path("{iddev: \\d+}/{idsync: \\d+}")
-    public Response getDeviceSynchDetail(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync) {
+    @Path("{idsync: \\d+}/device/{iddev: \\d+}")
+    public Response getDeviceSynchDetail(@PathParam("idsync") int idSync, @PathParam("iddev") int idDev) {
         try {
             return ok(em.createQuery("SELECT s FROM Sincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo d WHERE d.id = :idDisp AND s.id = :idSync", Sincronizzazione.class)
                     .setParameter("idDisp", idDev)
@@ -135,14 +135,14 @@ public class SynchService extends BaseService {
      * Returns all deltas associated to a specific synchronization for a given
      * device.
      * 
+     * @param idSync* 
      * @param idDev
-     * @param idSync
      * @param uriInfo
      * @return 
      */
     @GET
-    @Path("{iddev: \\d+}/{idsync: \\d+}/deltas")
-    public Response getDeviceSynchDelta(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync, @Context UriInfo uriInfo) {
+    @Path("{idsync: \\d+}/device/{iddev: \\d+}/deltas")
+    public Response getDeviceSynchDelta(@PathParam("idsync") int idSync, @PathParam("iddev") int idDev, @Context UriInfo uriInfo) {
         return ok(resourcesToURI(uriInfo, em.createQuery("SELECT d.id FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo dev WHERE dev.id = :iddev AND s.id = :idsync", Integer.class)
                 .setParameter("iddev", idDev)
                 .setParameter("idsync", idSync)
@@ -153,14 +153,14 @@ public class SynchService extends BaseService {
      * Returns detail about a requested delta for a specific synchronization/
      * device.
      * 
+     * @param idSync* 
      * @param idDev
-     * @param idSync
      * @param idDelta
      * @return 
      */
     @GET
-    @Path("{iddev: \\d+}/{idsync: \\d+}/deltas/{iddelta: \\d+}")
-    public Response getDeviceSynchDeltaDetail(@PathParam("iddev") int idDev, @PathParam("idsync") int idSync, @PathParam("iddelta") int idDelta) {
+    @Path("{idsync: \\d+}/device/{iddev: \\d+}/deltas/{iddelta: \\d+}")
+    public Response getDeviceSynchDeltaDetail(@PathParam("idsync") int idSync, @PathParam("iddev") int idDev, @PathParam("iddelta") int idDelta) {
         try {
             return ok(em.createQuery("SELECT d FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo disp WHERE disp.id = :iddev AND s.id = :idsync AND d.id = :iddelta", Delta.class)
                     .setParameter("iddev", idDev)
