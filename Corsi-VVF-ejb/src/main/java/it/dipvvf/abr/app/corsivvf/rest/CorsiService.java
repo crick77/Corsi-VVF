@@ -16,6 +16,7 @@ import it.dipvvf.abr.app.corsivvf.rest.security.JWTSecurityCheck;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Date;
 import javax.annotation.Resource;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
@@ -131,16 +133,22 @@ public class CorsiService extends BaseService {
     public Response updateCourse(@PathParam("id") int id, Corso corso) {
         try {
             corso.setId(id);
+            corso.setDataAggiornamento(new Date());
             em.merge(corso);
             em.flush();
             
             return noContent();
-        } catch (Exception e) {
+        }
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return badRequest(e.toString());
+            return conflict(pe.toString());
+        }
+        catch (Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
-    
+     
     /**
      * 
      * @param id
