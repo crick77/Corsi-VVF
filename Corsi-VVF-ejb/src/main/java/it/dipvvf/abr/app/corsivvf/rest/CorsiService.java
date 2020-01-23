@@ -98,7 +98,7 @@ public class CorsiService extends BaseService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addNewCourse(Corso corso, @Context UriInfo info) {
-        int count = em.createQuery("SELECT COUNT(c) FROM Corso c where c.titolo = :titolo OR c.id = :id", Integer.class)
+        long count = em.createQuery("SELECT COUNT(c) FROM Corso c where c.titolo = :titolo OR c.id = :id", Long.class)
                 .setParameter("titolo", corso.getTitolo())
                 .setParameter("id", corso.getId())
                 .getSingleResult();
@@ -108,7 +108,7 @@ public class CorsiService extends BaseService {
         }
 
         try {
-            corso.setAbilitato(false);
+            //corso.setAbilitato(false);
             corso.setId(null);
             corso.setUidRisorsa(ms.generateUID());
             em.persist(corso);
@@ -159,9 +159,9 @@ public class CorsiService extends BaseService {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteCourse(@PathParam("id") int id) {
         Corso c = em.find(Corso.class, id);
-        int count = em.createQuery("SELECT COUNT(c.id) FROM Categoria c WHERE c.idCorso = :idC", Integer.class).setParameter("idC", c).getSingleResult();
-        count += em.createQuery("SELECT COUNT(d.id) FROM Documento d WHERE d.idCorso = :idC", Integer.class).setParameter("idC", c).getSingleResult();
-        count += em.createQuery("SELECT COUNT(i.id) FROM Installazione i WHERE i.idCorso = :idC", Integer.class).setParameter("idC", c).getSingleResult();
+        long count = em.createQuery("SELECT COUNT(c.id) FROM Categoria c WHERE c.idCorso = :idC", Long.class).setParameter("idC", c).getSingleResult();
+        count += em.createQuery("SELECT COUNT(d.id) FROM Documento d WHERE d.idCorso = :idC", Long.class).setParameter("idC", c).getSingleResult();
+        count += em.createQuery("SELECT COUNT(i.id) FROM Installazione i WHERE i.idCorso = :idC", Long.class).setParameter("idC", c).getSingleResult();
 
         if (count > 0) {
             return conflict("Corso con elementi collegati. Eliminare prima tali collegamenti e riprovare.");
@@ -301,7 +301,7 @@ public class CorsiService extends BaseService {
                     .setParameter("idCorso", id)
                     .getSingleResult();
 
-            int count = em.createQuery("SELECT COUNT(d.id) FROM Documento d JOIN d.idCorso c WHERE c.id = :idCorso", Integer.class)
+            long count = em.createQuery("SELECT COUNT(d.id) FROM Documento d JOIN d.idCorso c WHERE c.id = :idCorso", Long.class)
                     .setParameter("idCorso", id)
                     .getSingleResult();
             if (count > 0) {
