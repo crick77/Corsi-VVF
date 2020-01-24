@@ -108,16 +108,20 @@ public class CorsiService extends BaseService {
         }
 
         try {
-            //corso.setAbilitato(false);
             corso.setId(null);
             corso.setUidRisorsa(ms.generateUID());
             em.persist(corso);
             em.flush();
             
             return created(resourceToURI(info, corso.getId()));
-        } catch (Exception e) {
+        } 
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return badRequest(e);
+            return conflict(pe.toString());
+        }
+        catch(Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
     
@@ -143,7 +147,7 @@ public class CorsiService extends BaseService {
             ctx.setRollbackOnly();
             return conflict(pe.toString());
         }
-        catch (Exception e) {
+        catch(Exception e) {
             ctx.setRollbackOnly();
             return error(e.toString());
         }
@@ -172,9 +176,14 @@ public class CorsiService extends BaseService {
             em.flush();
             
             return noContent();
-        } catch (Exception e) {
+        }    
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return conflict(e);
+            return conflict(pe.toString());                    
+        } 
+        catch (Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
     
@@ -227,9 +236,14 @@ public class CorsiService extends BaseService {
             em.flush();
             
             return created(cat.getId());
-        } catch (Exception e) {
+        } 
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return unprocessableEntity(e);
+            return conflict(pe.toString());
+        }
+        catch (Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
     
@@ -279,9 +293,14 @@ public class CorsiService extends BaseService {
             em.flush();
             
             return noContent();
-        } catch (Exception e) {
+        } 
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return badRequest(e);
+            return conflict(pe.toString());
+        }
+        catch(Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
     
@@ -317,10 +336,14 @@ public class CorsiService extends BaseService {
         } 
         catch(NoResultException nre) {
             return notFound();
-        } 
+        }
+        catch(PersistenceException pe) {
+            ctx.setRollbackOnly();
+            return conflict(pe.toString());
+        }
         catch (Exception e) {
             ctx.setRollbackOnly();
-            return conflict(e);
+            return error(e.toString());
         }
     }
     
@@ -387,9 +410,13 @@ public class CorsiService extends BaseService {
             
             return ok(resourceToURI(info, doc.getId()));
         }
+        catch(PersistenceException pe) {
+            ctx.setRollbackOnly();
+            return conflict(pe.toString());
+        }
         catch(IOException | ServletException e) {
             ctx.setRollbackOnly();
-            return unprocessableEntity(e);
+            return error(e.toString());
         }                                
     }
     
@@ -423,13 +450,18 @@ public class CorsiService extends BaseService {
     @Path("{id: \\d+}/documents/{iddoc: \\d+}")
     public Response deleteCourseDocument(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
         try {
-            return ok(em.createQuery("DELETE from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
+            return ok(em.createQuery("DELETE FROM Documento d WHERE d.idCorso.id = :idCorso AND d.id = :idDoc", Documento.class)
                     .setParameter("idCorso", idCorso)
                     .setParameter("idDoc", idDoc)
                     .getSingleResult());
         }
+        
         catch(NoResultException nre) {  
             return notFound();
+        }
+        catch(PersistenceException pe) {
+            ctx.setRollbackOnly();
+            return conflict(pe.toString());
         }
     }
     
@@ -453,7 +485,7 @@ public class CorsiService extends BaseService {
         }
         catch(NoResultException nre) {
             return notFound();
-        }
+        }        
     }
         
     /**
@@ -475,7 +507,7 @@ public class CorsiService extends BaseService {
         catch(NoResultException nre) {
             return notFound();
         }
-        
+                
         return ok(resourcesToURI(info, em.createQuery("SELECT d.id FROM Documento d JOIN d.idCategoria cat JOIN cat.idCorso c WHERE c.id = :idcorso AND cat.id = :idcat", Integer.class)
                         .setParameter("idcorso", idCorso)
                         .setParameter("idcat", idCat)
@@ -528,9 +560,13 @@ public class CorsiService extends BaseService {
             
             return ok(resourceToURI(info, doc.getId()));
         }
+        catch(PersistenceException pe) {
+            ctx.setRollbackOnly();
+            return conflict(pe.toString());
+        }
         catch(IOException | ServletException e) {
             ctx.setRollbackOnly();
-            return unprocessableEntity(e);
+            return error(e.toString());
         }                                
     }    
     
@@ -581,9 +617,13 @@ public class CorsiService extends BaseService {
             
             return noContent();
         }
+        catch(PersistenceException pe) {
+            ctx.setRollbackOnly();
+            return conflict(pe.toString());
+        }
         catch(Exception e) {
             ctx.setRollbackOnly();
-            return unprocessableEntity(e);
+            return error(e.toString());
         }
     }
     

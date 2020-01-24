@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -134,9 +135,14 @@ public class DispositiviService extends BaseService {
             em.flush();
             
             return noContent();
-        } catch (Exception e) {
+        } 
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return conflict(e);
+            return conflict(pe.toString());
+        }
+        catch (Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
 
@@ -283,9 +289,14 @@ public class DispositiviService extends BaseService {
             em.flush();
 
             return created(resourceToURI(info, inst.getId()));
-        } catch (Exception e) {
+        } 
+        catch(PersistenceException pe) {
             ctx.setRollbackOnly();
-            return conflict(e);
+            return conflict(pe.toString());
+        }
+        catch(Exception e) {
+            ctx.setRollbackOnly();
+            return error(e.toString());
         }
     }
 }
