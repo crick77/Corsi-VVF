@@ -453,7 +453,7 @@ public class CorsiService extends BaseService {
             return ok(em.createQuery("DELETE FROM Documento d WHERE d.idCorso.id = :idCorso AND d.id = :idDoc", Documento.class)
                     .setParameter("idCorso", idCorso)
                     .setParameter("idDoc", idDoc)
-                    .getSingleResult());
+                    .executeUpdate());
         }
         
         catch(NoResultException nre) {  
@@ -476,7 +476,7 @@ public class CorsiService extends BaseService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response getCourseDocumentFile(@PathParam("id") int idCorso, @PathParam("iddoc") int idDoc) {
         try {
-            Documento doc = em.createQuery("SELECT d from Documento d WHERE d.idCorso = :idCorso AND d.id = :idDoc", Documento.class)
+            Documento doc = em.createQuery("SELECT d from Documento d JOIN d.idCorso c WHERE c.id = :idCorso AND d.id = :idDoc", Documento.class)
                 .setParameter("idCorso", idCorso)
                 .setParameter("idDoc", idDoc)
                 .getSingleResult();

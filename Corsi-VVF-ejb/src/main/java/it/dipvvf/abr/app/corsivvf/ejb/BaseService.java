@@ -194,6 +194,9 @@ public abstract class BaseService {
      * @return 
      */
     public Response downloadFile(String fileName, byte[] data) {
-        return Response.ok(data).header("Content-Disposition", "attachment; filename=\""+fileName+"\"").build();
+        return Response.ok(data)
+                       .header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
+                       .header("Access-Control-Expose-Headers", "Content-Disposition")
+                       .build();
     }
 }
