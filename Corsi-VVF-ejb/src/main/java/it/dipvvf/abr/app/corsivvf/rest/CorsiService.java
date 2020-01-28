@@ -408,7 +408,7 @@ public class CorsiService extends BaseService {
                         
             em.flush();
             
-            return ok(resourceToURI(info, doc.getId()));
+            return created(resourceToURI(info, doc.getId()));
         }
         catch(PersistenceException pe) {
             ctx.setRollbackOnly();
@@ -558,7 +558,7 @@ public class CorsiService extends BaseService {
             
             em.flush();
             
-            return ok(resourceToURI(info, doc.getId()));
+            return created(resourceToURI(info, doc.getId()));
         }
         catch(PersistenceException pe) {
             ctx.setRollbackOnly();
