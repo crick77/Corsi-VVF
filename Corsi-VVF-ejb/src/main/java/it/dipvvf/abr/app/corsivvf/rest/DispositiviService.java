@@ -15,6 +15,7 @@ import it.dipvvf.abr.app.corsivvf.model.Dispositivo;
 import it.dipvvf.abr.app.corsivvf.model.Documento;
 import it.dipvvf.abr.app.corsivvf.model.Installazione;
 import it.dipvvf.abr.app.corsivvf.model.Sincronizzazione;
+import it.dipvvf.abr.app.corsivvf.rest.security.DeviceSecurityCheck;
 import it.dipvvf.abr.app.corsivvf.rest.security.JWTSecurityCheck;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +49,6 @@ import javax.ws.rs.core.UriInfo;
 @LocalBean
 @Path("devices")
 @Produces(MediaType.APPLICATION_JSON)
-@JWTSecurityCheck
 public class DispositiviService extends BaseService {
     @Inject
     MiscServices ms;
@@ -62,6 +62,7 @@ public class DispositiviService extends BaseService {
      * @return 
      */
     @GET
+    @JWTSecurityCheck
     public Response getDevices() {
         return ok(em.createQuery("SELECT d.id FROM Dispositivo d").getResultList());
     }
@@ -72,6 +73,7 @@ public class DispositiviService extends BaseService {
      * @return 
      */
     @POST
+    @DeviceSecurityCheck
     public Response registerDevice(@HeaderParam("Device-Id") String deviceId) {
         if (deviceId == null) {
             return badRequest();
@@ -115,6 +117,7 @@ public class DispositiviService extends BaseService {
      */
     @GET
     @Path("{id: \\d+}")
+    @JWTSecurityCheck
     public Response getDeviceDetail(@PathParam("id") int id) {
         Dispositivo disp = em.find(Dispositivo.class, id);
         return (disp == null) ? notFound() : ok(disp);
@@ -129,6 +132,7 @@ public class DispositiviService extends BaseService {
     @PUT
     @Path("{id: \\d+}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @JWTSecurityCheck
     public Response updateDevice(@PathParam("id") int id, Dispositivo d) {
         try {
             em.persist(d);
@@ -153,6 +157,7 @@ public class DispositiviService extends BaseService {
      */
     @GET
     @Path("{id: \\d+}/courses")
+    @JWTSecurityCheck
     public Response getDeviceCourses(@PathParam("id") int id) {
         return ok(em.createQuery("SELECT i.id FROM Installazione i JOIN i.idDispositivo d WHERE d.id = :iddisp")
                 .setParameter("iddisp", id)
@@ -167,6 +172,7 @@ public class DispositiviService extends BaseService {
      */
     @GET
     @Path("{id: \\d+}/courses/{idcourse: \\d+}")
+    @JWTSecurityCheck
     public Response getDettaglioDeviceCorsi(@PathParam("id") int id, @PathParam("idcourse") int idcorso) {
         try {
             return ok(em.createQuery("SELECT i FROM Installazione i JOIN i.idDispositivo d JOIN i.idCorso c WHERE d.id = :id AND c.id = :idcorso", Installazione.class)
@@ -188,6 +194,7 @@ public class DispositiviService extends BaseService {
      */
     @POST
     @Path("{id: \\d+}/courses/{idcourse: \\d+}")
+    @JWTSecurityCheck
     public Response installDeviceCourse(@PathParam("id") int id, @PathParam("idcourse") int idCorso, @Context UriInfo info) {
         Dispositivo disp = em.find(Dispositivo.class, id);
         if (disp == null) {
