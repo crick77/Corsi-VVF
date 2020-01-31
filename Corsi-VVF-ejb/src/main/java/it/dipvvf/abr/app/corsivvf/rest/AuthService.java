@@ -113,13 +113,13 @@ public class AuthService extends BaseService {
     @Path("logout")
     public Response logout(@HeaderParam("Authorization") String token) {
         if(token!=null) {
-            token = token.substring(token.indexOf(":")+1).trim();
+            token = token.replace(MiscServices.BEARER, "").trim();
             
-            ss.invalidate(token);
-            
-            return ok();
+            if(ss.invalidate(token)) {            
+                return noContent();
+            }
         }
         
-        return notModified();
+        return unauthorized();
     }
 }

@@ -26,6 +26,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
@@ -37,6 +38,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -69,12 +71,36 @@ public class CorsiService extends BaseService {
 
     /**
      * 
+     * @param query
+     * @param enabled
      * @param info
      * @return 
-     */
+     */  
     @GET
-    public Response getCourses(@Context UriInfo info) {
-        return ok(resourcesToURI(info, em.createQuery("select c.id from Corso c").getResultList()));
+    public Response getCourses(@QueryParam("q") String query, @QueryParam("enabled") String enabled, @Context UriInfo info) {
+        if(query!=null || enabled!=null) {            
+            String sql = "select c.id from Corso c WHERE (1=1)";
+            if(enabled!=null) {
+                sql = sql+"AND (c.abilitato = :en)";
+            }
+            if(query!=null) {
+                query = "%"+query.toUpperCase()+"%";
+                sql = sql+" AND ((UPPER(c.descrizione) LIKE :q) OR (c.titolo LIKE :q))";
+            }
+            
+            Query q = em.createQuery(sql);
+            if(enabled!=null) {
+                q.setParameter("en", Boolean.parseBoolean(enabled));
+            }
+            if(query!=null) {
+                q.setParameter("q", query);
+            }
+            
+            return ok(resourcesToURI(info, q.getResultList()));
+        }
+        else {
+            return ok(resourcesToURI(info, em.createQuery("select c.id from Corso c").getResultList()));
+        }
     }
 
     /**

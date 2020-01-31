@@ -31,7 +31,8 @@ public class MiscServices {
     private ObjectMapper mapper;
     private static final String SECRET = "trytodecryptthisbastard!!";
     private static final String ISSUER = "CorsiVVF.dipvvf.it";
-    public static final long NO_EXPIRE = -1;
+    public final static String BEARER = "Bearer";
+    public final static long NO_EXPIRE = -1;
 
     @PostConstruct
     void initialize() {

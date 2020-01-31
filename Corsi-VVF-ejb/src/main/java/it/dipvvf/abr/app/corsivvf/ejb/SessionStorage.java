@@ -38,6 +38,7 @@ public class SessionStorage {
     @PostConstruct
     void startup() {
         session = new HashMap<>();
+        System.out.println("SessionStorage created.");
     }
     
     /**
@@ -98,12 +99,14 @@ public class SessionStorage {
     /**
      * 
      * @param token 
+     * @return  
      */
     @Lock(LockType.WRITE)
-    public void invalidate(String token) {
+    public boolean invalidate(String token) {
         if(token!=null) {
-            session.remove(token);
+            return (session.remove(token)!=null);
         }
+        return false;
     }
     
     /**
@@ -111,6 +114,6 @@ public class SessionStorage {
      */
     @Lock(LockType.WRITE)
     public void flush() {
-        session.clear();
+        session.clear();        
     }
 }

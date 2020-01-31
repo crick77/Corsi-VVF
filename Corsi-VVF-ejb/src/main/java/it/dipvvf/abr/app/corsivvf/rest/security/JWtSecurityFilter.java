@@ -27,8 +27,7 @@ import javax.ws.rs.core.Response;
 @JWTSecurityCheck
 @Priority(Priorities.AUTHENTICATION)
 @Stateless
-public class JWtSecurityFilter implements ContainerRequestFilter {
-    private final static int TOKEN_START = "Bearer".length();
+public class JWtSecurityFilter implements ContainerRequestFilter {    
     @Inject
     MiscServices msb;    
     @Inject
@@ -39,7 +38,7 @@ public class JWtSecurityFilter implements ContainerRequestFilter {
         String token = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
         System.out.printf("Controllo token [%s] per servizio [%s]", token, requestContext.getUriInfo().getPath());
         if(token!=null) {
-            token = token.substring(TOKEN_START).trim();
+            token = token.replace(MiscServices.BEARER, "").trim();
             
             DecodedJWT jwt = msb.decodeToken(token);            
             if(jwt!=null) {
