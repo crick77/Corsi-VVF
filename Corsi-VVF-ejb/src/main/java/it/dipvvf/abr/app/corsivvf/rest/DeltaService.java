@@ -58,7 +58,7 @@ public class DeltaService extends BaseService {
     @GET
     public Response getPendingStates(@HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken, @Context UriInfo uriInfo) {
         if (devId == null || devToken == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return badRequest();
         }
 
         //DecodedJWT token = ms.decodeToken(devToken);
@@ -71,7 +71,7 @@ public class DeltaService extends BaseService {
                 .setMaxResults(1)
                 .getResultList();
 
-        return Response.ok(resourcesToURI(uriInfo, lPending)).build();
+        return ok(resourcesToURI(uriInfo, lPending));
     }
 
     /**
@@ -85,7 +85,7 @@ public class DeltaService extends BaseService {
     @Path("count")
     public Response getPendingStateCount(@HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken, @Context UriInfo uriInfo) {
         if (devId == null || devToken == null) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return badRequest();
         }
 
         //DecodedJWT token = ms.decodeToken(devToken);
@@ -102,7 +102,7 @@ public class DeltaService extends BaseService {
                 .add("count", pendingCount)
                 .build();
 
-        return Response.ok(countObj).build();
+        return ok(countObj);
     }
 
     /**
@@ -117,7 +117,7 @@ public class DeltaService extends BaseService {
     public Response getPendingStateDetail(@PathParam("iddelta") int idDelta, @HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken) {
         try {
             if (devId == null || devToken == null) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                return badRequest();
             }
 
             //DecodedJWT token = ms.decodeToken(devToken);
@@ -131,9 +131,9 @@ public class DeltaService extends BaseService {
                     .setParameter("iddelta", idDelta)
                     .getSingleResult();
 
-            return Response.ok(delta).build();
+            return ok(delta);
         } catch (NoResultException nre) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return notFound();
         }
     }
 

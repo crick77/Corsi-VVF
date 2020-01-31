@@ -384,7 +384,7 @@ public class CorsiService extends BaseService {
         try {
             Part documentData = req.getPart("document");
             if (documentData == null) {
-                return badRequest();
+                return unprocessableEntity("Missing document.");
             }                
 
             final byte[] bytes;
@@ -534,7 +534,7 @@ public class CorsiService extends BaseService {
         
             Part documentData = req.getPart("document");
             if (documentData == null) {
-                return badRequest();
+                return unprocessableEntity("Missing document.");
             }                
 
             final byte[] bytes;
