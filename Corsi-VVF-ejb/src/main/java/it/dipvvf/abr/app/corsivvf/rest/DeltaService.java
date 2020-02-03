@@ -26,6 +26,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -137,6 +138,47 @@ public class DeltaService extends BaseService {
         }
     }
 
+    /**
+     * 
+     * @param idDelta
+     * @param devId
+     * @param devToken
+     * @param hash
+     * @return 
+     */
+    @PUT
+    @Path("{iddelta: \\d+}")
+    public Response updateStateDetail(@PathParam("iddelta") int idDelta, @HeaderParam("Device-Id") String devId, @HeaderParam("Device-Token") String devToken, String hash) {
+         try {
+            if (devId == null || devToken == null) {
+                return badRequest();
+            }
+
+            //DecodedJWT token = ms.decodeToken(devToken);
+            //if (token == null) 
+            //    return Response.status(Response.Status.UNAUTHORIZED).build();
+            
+            Delta delta = em.createQuery("SELECT d FROM Delta d JOIN d.idSincronizzazione s JOIN s.idInstallazione i JOIN i.idDispositivo dev WHERE s.stato = :status AND dev.deviceid = :devId AND dev.token = :token AND d.id = :iddelta", Delta.class)
+                    .setParameter("status", DeltaConst.Status.PENDING.toString())
+                    .setParameter("devId", devId)
+                    .setParameter("token", devToken)
+                    .setParameter("iddelta", idDelta)
+                    .getSingleResult();
+            
+            if(delta.getMd5().equals(hash)) {
+                delta.setStato(DeltaConst.Status.DONE.toString());
+            }
+            else {
+                delta.setStato(DeltaConst.Status.ERROR.toString());
+            }
+            em.flush();
+
+            return noContent();
+        } catch (NoResultException nre) {
+            return notFound();
+        }
+    }
+    
     /**
      * *******************************************************
      *

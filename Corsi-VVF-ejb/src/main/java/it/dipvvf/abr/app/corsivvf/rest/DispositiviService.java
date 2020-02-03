@@ -94,7 +94,7 @@ public class DispositiviService extends BaseService {
 
         // Token già generato, restituisce lo stato
         if (d.getToken() != null) {
-            return notModified();
+            return noContent();
         }
 
         // Non abilitato? Segnala al client la mancanza di autorizzazione
